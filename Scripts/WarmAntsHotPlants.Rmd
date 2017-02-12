@@ -1,0 +1,309 @@
+---
+title: Responses of Plants and Ants to Soil Warming and N Fertilization at Harvard
+  Forest
+author: "Roy Moger-Reischer and Katie Beidler"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+## OVERVIEW
+Insert Description of Project Background (KVB)
+Questions we are exploring
+a. Does diversity vary among sites? Does this correspond to treatment type?
+b. Is treatment type a significant predictor of site dissimilarity?
+
+## 1) Setup 
+### Retrieve and sSet your Working Directory
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+clr = function() {
+  ENV = globalenv()
+  ll = ls(envir = ENV)
+  ll = ll[ll != "clr"]
+  rm(list = ll, envir = ENV)
+}
+getwd() 
+setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
+
+```
+### Install Packages
+This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
+```{r results='hide', message=FALSE, warning=FALSE} 
+
+package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2',
+'cowplot', 'MullerPlot', 'RColorBrewer', 'reshape2', 'lubridate',
+'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans')
+for (package in package.list) {
+if (!require(package, character.only = TRUE, quietly = TRUE)) {
+install.packages(package, repos='http://cran.us.r-project.org')
+library(package, character.only = TRUE) }
+}
+```
+## 2) LOADING DATA
+### Load datasets
+The R code chunk below, does the following: Loads in the plant dataset (explanation), ant dataset (explanation)...Describe the different datasets here
+```{r}
+plant = read.csv("./Data/HF_plants.csv")
+ant = read.csv("./Data/HF_ants.csv")
+nmin = read.csv("./Data/HF_nmin.csv")
+resp = read.csv("./Data/HF_soilresp.csv")
+temp = read.csv("./Data/HF_soiltemp.csv")
+```
+## 2) Data Wrangling
+```{r}
+# Subsetting the data into the different years
+plant_06 = (filter(plant, year == 2006))
+plant_07 = (filter(plant, year == 2007))
+plant_08 = (filter(plant, year == 2008))
+plant_09 = (filter(plant, year == 2009))
+
+ant_06 = filter(ant, year == 2006)
+ant_07 = filter(ant, year == 2007)
+ant_08 = filter(ant, year == 2008)
+ant_09 = filter(ant, year == 2009)
+
+# Separating out the treatments from the site by species matricies 
+plant_06_sbys = plant_06[ ,4:43]
+plant_07_sbys = plant_07[ ,4:43]
+plant_08_sbys = plant_08[ ,4:43]
+plant_09_sbys = plant_09[ ,4:43]
+
+ant_06_sbys = ant_06[ ,4:18]
+ant_07_sbys = ant_07[ ,4:18]
+ant_08_sbys = ant_08[ ,4:18]
+ant_09_sbys = ant_09[ ,4:18]
+```
+## 2) Describe how richness and biodiversity estimates vary among sites.
+### Boxlots of Richness/ diversity for the different treatments/ years
+### Rank abundance curves
+```{r}
+# Richness Function
+S.obs <- function(x =" "){
+  rowSums(x>0) *1 
+}
+```
+## 3) Testing H1: Plant beta Diversity differs among soil treatments using a PERMANOVA
+```{r}
+# Ordination
+# construct a resemblance matrix based on Bray-Curtis Distance ("plant_2006.db") for 2006
+plant_06.db = vegdist(plant_06_sbys, method = "bray", upper = TRUE, diag = TRUE)
+# Perform a Principal Coordinates Analysis to visualize beta-diversity
+plant_06.pcoa = cmdscale(plant_06.db, eig = TRUE, k = 3)
+
+# Calculate the variation explained by the first three axes in your ordination
+explainvar1.p = round(plant_06.pcoa$eig[1] / sum(plant_06.pcoa$eig), 3) * 100
+explainvar2.p = round(plant_06.pcoa$eig[2] / sum(plant_06.pcoa$eig), 3) * 100
+explainvar3.p = round(plant_06.pcoa$eig[3] / sum(plant_06.pcoa$eig), 3) * 100
+sum.eig = sum(explainvar1.p, explainvar2.p, explainvar3.p)
+
+# plot the PCoA ordination
+# Define Plot Parameters
+par(mar = c(5, 5, 1, 2) + 0.1)
+# Initiate Plot
+plot(plant_06.pcoa$points[ ,1], plant_06.pcoa$points[ ,2], 
+xlab = paste("PCoA 1 (", explainvar1.p, "%)", sep = ""),
+ylab = paste("PCoA 2 (", explainvar2.p, "%)", sep = ""),
+main = "Ordination for 2006",
+pch = 16, cex = 2.0, type = "n", cex.lab = 1.5, cex.axis = 1.2, axes = FALSE)
+# Add Axes
+axis(side = 1, labels = T, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 2, labels = T, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+abline(h = 0, v = 0, lty = 3)
+box(lwd = 2)
+
+# Add Points & Labels
+points(plant_06.pcoa$points[ ,1], plant_06.pcoa$points[ ,2],
+pch = 16, cex = 3, bg = "gray", col = "gray")
+text(plant_06.pcoa$points[ ,1], plant_06.pcoa$points[ ,2],
+labels = row.names(plant_06.pcoa$points))
+
+# Identify influential species 
+# First we calculate the relative abundances of each species at each site
+plant_06REL = plant_06_sbys 
+for(i in 1:nrow(plant_06_sbys )){
+plant_06REL[i, ] = plant_06_sbys [i, ] / sum(plant_06_sbys [i, ])
+}
+# Now, we use this information to calculate and add species scores
+plant_06.pcoa= add.spec.scores(plant_06.pcoa,plant_06REL,method = "pcoa.scores")
+text(plant_06.pcoa$cproj[ ,1], plant_06.pcoa$cproj[ ,2],
+labels = row.names(plant_06.pcoa$cproj), col = "black")
+
+# Hypothesis Testing
+# Soil treatment (either warming or N fertilization) influenced tree beta diversity during 2006. 
+
+# Multivariate Procedures for Categorical designs 
+
+# There are 40 tree species. For each year and each treatment there are 6 sites. Treatments include: 1=control, 2=warm, 3=nitrogen, 4=warm/nitrogen
+# Create "Factors" vector for categorizing soil treatments
+soil_treat = as.factor(plant_06[ ,3])
+
+# Run PERMANOVA with adonis function
+P_PERMA.06 = adonis(plant_06_sbys ~ soil_treat, method = "bray", permutations = 999)
+P_PERMA.07 = adonis(plant_07_sbys ~ soil_treat, method = "bray", permutations = 999)
+P_PERMA.08 = adonis(plant_08_sbys ~ soil_treat, method = "bray", permutations = 999)
+P_PERMA.09 = adonis(plant_09_sbys ~ soil_treat, method = "bray", permutations = 999)
+
+P_PERMA.06 
+P_PERMA.07
+P_PERMA.08 
+P_PERMA.09
+```
+## 4) Testing H2: Ant beta Diversity differs among soil treatments using a PERMANOVA
+```{r}
+# Removing columns 
+ant_06_sbys = ant_06_sbys[, !apply(ant_06_sbys == 0, 2, all)]
+ant_06_sbys = rowSums(ant_06_sbys == 0) != ncol(ant_06_sbys)
+
+ant_07_sbys = ant_07_sbys[, !apply(ant_07_sbys == 0, 2, all)]
+ant_08_sbys = ant_08_sbys[, !apply(ant_08_sbys == 0, 2, all)]
+ant_09_sbys = ant_09_sbys[, !apply(ant_09_sbys == 0, 2, all)]
+
+# Ordination
+# construct a resemblance matrix based on Bray-Curtis Distance ("plant_2006.db") for 2006
+ant_06.db = vegdist(ant_06_sbys, method = "bray")
+# Perform a Principal Coordinates Analysis to visualize beta-diversity
+ant_06.pcoa = cmdscale(ant_06.db, eig = TRUE, k = 3)
+
+# Calculate the variation explained by the first three axes in your ordination
+explainvar1.a = round(ant_06.pcoa$eig[1] / sum(ant_06.pcoa$eig), 3) * 100
+explainvar2.a = round(ant_06.pcoa$eig[2] / sum(ant_06.pcoa$eig), 3) * 100
+explainvar3.a = round(ant_06.pcoa$eig[3] / sum(ant_06.pcoa$eig), 3) * 100
+sum.eig = sum(explainvar1.a, explainvar2.a, explainvar3.a)
+
+# plot the PCoA ordination
+# Define Plot Parameters
+par(mar = c(5, 5, 1, 2) + 0.1)
+# Initiate Plot
+plot(ant_06.pcoa$points[ ,1], ant_06.pcoa$points[ ,2], 
+xlab = paste("PCoA 1 (", explainvar1.a, "%)", sep = ""),
+ylab = paste("PCoA 2 (", explainvar2.a, "%)", sep = ""),
+main = "Ant Ordination for 2006",
+pch = 16, cex = 2.0, type = "n", cex.lab = 1.5, cex.axis = 1.2, axes = FALSE)
+# Add Axes
+axis(side = 1, labels = T, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+axis(side = 2, labels = T, lwd.ticks = 2, cex.axis = 1.2, las = 1)
+abline(h = 0, v = 0, lty = 3)
+box(lwd = 2)
+
+# Add Points & Labels
+points(plant_06.pcoa$points[ ,1], ant_06.pcoa$points[ ,2],
+pch = 16, cex = 3, bg = "gray", col = "gray")
+text(ant_06.pcoa$points[ ,1], ant_06.pcoa$points[ ,2],
+labels = row.names(ant_06.pcoa$points))
+
+# Identify influential species 
+# First we calculate the relative abundances of each species at each site
+ant_06REL = ant_06_sbys 
+for(i in 1:nrow(ant_06_sbys )){
+ant_06REL[i, ] = ant_06_sbys [i, ] / sum(ant_06_sbys [i, ])
+}
+# Now, we use this information to calculate and add species scores
+ant_06.pcoa= add.spec.scores(ant_06.pcoa,ant_06REL,method = "pcoa.scores")
+text(ant_06.pcoa$cproj[ ,1], ant_06.pcoa$cproj[ ,2],
+labels = row.names(ant_06.pcoa$cproj), col = "black")
+
+# Hypothesis Testing
+# H2: Soil treatment (either warming or N fertilization) influenced beta diversity of ants for the final time period 2009. 
+
+# Multivariate Procedures for Categorical designs 
+
+# There are 18 ant species. For each year and each treatment there are 6 sites. Treatments include: 1=control, 2=warm, 3=nitrogen, 4=warm/nitrogen
+# Create "Factors" vector for categorizing soil treatments
+soil_treat = as.factor(ant_06[ ,3])
+
+# Run PERMANOVA with adonis function
+A_PERMA.06 = adonis(ant_06_sbys ~ soil_treat, method = "bray", permutations = 999)
+A_PERMA.07 = adonis(ant_07_sbys ~ soil_treat, method = "bray", permutations = 999)
+A_PERMA.08 = adonis(ant_08_sbys ~ soil_treat, method = "bray", permutations = 999)
+A_PERMA.09 = adonis(ant_09_sbys ~ soil_treat, method = "bray", permutations = 999)
+
+A_PERMA.06 
+A_PERMA.07
+A_PERMA.08 
+A_PERMA.09
+```
+## 5) Testing H3: plant richness (diversity) differs among years and soil treatments 
+```{r}
+# Calculate observed richness from time-by-species matrix
+p_richness = as.data.frame(rowSums(plant[,-c(1:3)] > 0)) 
+# Create data frame with experimental design and richness data
+p_rich.all = data.frame(plant[,1:3,], richness)
+# Rename column
+names(p_rich.all)[4] = "richness"
+
+p_rich.treat.plot = group_by(p_rich.all, treatment, year) %>%
+  summarise(mean = mean(richness), sd = sd(richness),n = n(),sem = sd/sqrt(n))
+# avg. richness per group
+# stand. dev. per group
+# num. obs. per group
+# calc. std. err. mean.
+p_rich.plot = ggplot(p_rich.treat.plot, aes(x = year, y = mean, color = treatment)) + 
+                  geom_point(size = 1, show.legend = T) +
+                  geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +  
+                  xlim(2006, 2009) + xlab("Year") + ylab("Richness")
+plot(p_rich.plot)
+# 3. Perform an RM-ANOVA and construct a F-test using the AR(1)
+p_rich.rm = lme(richness ~ treatment * year, random = ~ 1 | treatment, correlation = corAR1(form = ~ 1 | treatment),data = p_rich.all) # Look at detailed output
+summary(p_rich.rm) # Obtain F-test
+anova(p_rich.rm)
+# Make cleaner ANOVA table
+set.caption("RMANOVA for Plant Data") 
+pander(anova(p_rich.rm))
+# Use `lsmeans` package for time-corrected marginal means
+lsmeans(p_rich.rm, ~ treatment)
+```
+## 6) Testing H4: ant richness (diversity) differs among years and soil treatments
+```{r}
+
+```
+## 7) Testing H5: Soil respiration is positively correlated with richness
+```{r}
+
+plants.sortedT<-arrange(plant, treatment)
+plants.sortedY<-arrange(plants.sortedT,year)
+plants.sortedP<-arrange(plants.sortedY,plot)
+my2009plants.sortedY<-filter(plants.sortedY, year==2009, plot!=16 & plot!=12 & plot!=19)
+#dim(my2009plants.sortedY)
+sbs2009plants.sortedYt<-my2009plants.sortedY[4:43]
+sbs2009plants.sortedYtt<-as.data.frame(sbs2009plants.sortedYt)
+
+my2008plants.sortedY<-filter(plants.sortedY, year==2008)
+#dim(my2008plants.sortedY)
+sbs2008plants.sortedYt<-my2008plants.sortedY[4:43]
+sbs2008plants.sortedYtt<-as.data.frame(sbs2008plants.sortedYt)
+my2007plants.sortedY<-filter(plants.sortedY, year==2007)
+#dim(my2007plants.sortedY)
+sbs2007plants.sortedYt<-my2007plants.sortedY[4:43]
+sbs2007plants.sortedYtt<-as.data.frame(sbs2007plants.sortedYt)
+my2006plants.sortedY<-filter(plants.sortedY, year==2006)
+#dim(my2006plants.sortedY)
+sbs2006plants.sortedYt<-my2006plants.sortedY[4:43]
+sbs2006plants.sortedYtt<-as.data.frame(sbs2006plants.sortedYt)
+
+soilenv<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soilresp.csv")
+mysoilenv_holes<-na.omit(soilenv,year==2009,month==1)
+my2009soilenv_1<-filter(soilenv,year==2009,month==1,plot!=12 & plot!=16 & plot!=19)
+co2_1<-c(my2009soilenv_1[8])
+co2_1<-
+print(co2_1)
+tester<-c(S.obs(sbs2009plants.sortedYtt))
+sbs2009_1.sobs<-c(tester,tester)
+toyr<-cbind(data.frame(sbs2009_1.sobs, co2_1))
+lmfit<-lm(co2flux~sbs2009_1.sobs,data=toyr)
+summary(lmfit)
+plot(co2flux~sbs2009_1.sobs,data=toyr)
+abline(lmfit)
+
+temporary_soil<-my2009soilenv[-9]
+sbs2009soilenv<-na.omit(as.matrix(temporary_soil[8:11]))
+mycolnames<-colnames(sbs2009plants.sortedYtt, do.NULL = TRUE, prefix = "col")
+```
+## 8) Looking at the effect of treatment on the change in soil respiration over the years- time series analysis 
+```{r}
+
+```
+## 9) Looking at the effect of treatment on the change in N mineralization over the years- time series analysis 
+```{r}
+
+```
+
+
