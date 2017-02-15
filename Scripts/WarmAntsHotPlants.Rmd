@@ -22,8 +22,8 @@ clr = function() {
   rm(list = ll, envir = ENV)
 }
 getwd() 
-setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
-
+#setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
+#setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro")
 ```
 ### Install Packages
 This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
@@ -31,7 +31,7 @@ This analysis will require several packages. The require() function in R returns
 
 package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2',
 'cowplot', 'MullerPlot', 'RColorBrewer', 'reshape2', 'lubridate',
-'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans')
+'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools', 'CatterPlots')
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
 install.packages(package, repos='http://cran.us.r-project.org')
@@ -61,7 +61,7 @@ ant_07 = filter(ant, year == 2007)
 ant_08 = filter(ant, year == 2008)
 ant_09 = filter(ant, year == 2009)
 
-# Separating out the treatments from the site by species matricies 
+# Separating out the treatments from the site by species matrices 
 plant_06_sbys = plant_06[ ,4:43]
 plant_07_sbys = plant_07[ ,4:43]
 plant_08_sbys = plant_08[ ,4:43]
@@ -305,5 +305,23 @@ mycolnames<-colnames(sbs2009plants.sortedYtt, do.NULL = TRUE, prefix = "col")
 ```{r}
 
 ```
+## 10) TESTING PRACTICE WITH CATTERPLOT
+```{r}
+library(CatterPlots)
+x <- -10:10
+y <- -x^2 + 10
+purr <- catplot(xs=x, ys=y, cat=3, catcolor=c(0,1,1,1))
+cats(purr, -x, -y, cat=4, catcolor=c(1,0,1,1))
 
+# for more fun ...
+meow <- multicat(xs=x, ys=y, cat=c(1,2,3), catcolor=list(c(1,1,0,1),c(0,1,1,1)), canvas=c(-0.1,1.1, -0.1, 1.1))
+morecats(purr, x, 10*sin(x)+40, size=0.05, cat=c(4,5,6), catcolor=list(c(0,0,1,1),c(0,1,0,1)), type="line")
+
+# random cats
+meow <- multicat(xs=x, ys=rnorm(21),
+                 cat=c(1,2,3,4,5,6,7,8,9,10,11),
+                 catcolor=list(c(1,0,0,1)),
+                 canvas=c(-0.1,1.1, -0.1, 1.1),
+                 xlab="some cats", ylab="other cats", main="Random Cats")
+```
 
