@@ -14,12 +14,12 @@ b. Is treatment type a significant predictor of site dissimilarity?
 ### Retrieve and sSet your Working Directory
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-clr = function() {
-  ENV = globalenv()
-  ll = ls(envir = ENV)
-  ll = ll[ll != "clr"]
-  rm(list = ll, envir = ENV)
-}
+#clr = function() {
+#  ENV = globalenv()
+#  ll = ls(envir = ENV)
+#  ll = ll[ll != "clr"]
+#  rm(list = ll, envir = ENV)
+#}
 getwd() 
 #setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
 #setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro")
@@ -52,10 +52,10 @@ ant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_ants.csv")
 nmin = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_nmin.csv")
 resp = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soilresp.csv")
 temp = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soiltemp.csv")
-cco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\Cflux.csv")
-hco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\Hflux.csv")
-hnco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HNflux.csv")
-cco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\Cflux.csv")
+cco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\cflux_cure.csv")
+hco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\hflux_cure.csv")
+hnco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\hnflux_cure.csv")
+nco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\nflux_cure.csv")
 ```
 ## 2) Data Wrangling
 ```{r}
@@ -308,52 +308,82 @@ mycolnames<-colnames(sbs2009plants.sortedYtt, do.NULL = TRUE, prefix = "col")
 ```
 ## 8) Looking at the effect of treatment on the change in soil respiration over the years- time series analysis 
 ```{r}
-myCO2ts<-resp[with(resp,order(trt,year,month)),]
-myCO2ts<-myCO2ts[-1,]
-myC_CO2ts<-filter(myCO2ts, trt=="C") %>% group_by(year, month)
-myCts<-(count(myC_CO2ts,wt=co2flux))
-myH_CO2ts<-filter(myCO2ts, trt=="H")
-myHN_CO2ts<-filter(myCO2ts, trt=="HN")
-myN_CO2ts<-filter(myCO2ts, trt=="N")
+#myCO2ts<-resp[with(resp,order(trt,year,month)),]
+#myCO2ts<-myCO2ts[-1,]
+#myC_CO2ts<-filter(myCO2ts, trt=="C") %>% group_by(year, month)
+#myCts<-(count(myC_CO2ts,wt=co2flux))
+#myH_CO2ts<-filter(myCO2ts, trt=="H")
+#myHN_CO2ts<-filter(myCO2ts, trt=="HN")
+#myN_CO2ts<-filter(myCO2ts, trt=="N")
 #<- filter(resp, taxa=="Rodent") %>% filter(plot_id==18) %>% group_by(year, month, plot_id) %>% count(species_id)
 #myCO2ts$season <- NA
 #myCO2ts$season <- myCO2ts$month %in% c(6:10)
 #myCO2ts$season <- ifelse(myCO2ts$season == TRUE, "rain", "norain")
-myCO2ts<-group_by(myCO2ts, year, month)
-tester<-count(myCO2ts,wt=co2flux)
+#myCO2ts<-group_by(myCO2ts, year, month)
+#tester<-count(myCO2ts,wt=co2flux)
 
-abund$nn <- abund$nn * 4
-C_ts <- ts(abund$nn, frequency = 2, start = c(1977, 2))
-plot.ts(abund.ts, type = "l", ylab = "Rodent Abundance (#/hectare)", xlab = "Time (year)", las = 1, ylim = c(0, 500))
-#2
-abund.sm <- SMA(abund$nn, n = 2)#used 2 bc we have condensed to hexamonthly datapoints
-plot(abund.sm, type = "l", col = "#56e4c6", ylab = "Rodent Abundance (#/hectare)",
-xlab = "Sample", las = 1, ylim = c(0, 500))
-lines(abund$nn, col = "black")
-legend(0, 475, col = c("#56e4c6", "black"), lty = c(1,1),
-c("smooth", "non-smooth"), bty = "n", cex = 1)
+cco2r<-cco2[,-1]
+cco2ts<-ts(cco2r$co2avg, frequency=2,start=c(2006,1))
+plot.ts(cco2ts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+cco2.sm<-SMA(cco2r$co2avg,n=2)
+plot(cco2.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160))
+lines(cco2r$co2avg, col="black")
+legend(0, 20, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+#decomposition categs
+c.comp<-decompose(cco2ts)
+plot(c.comp)
+#test for stationarity
+cadf<-adf.test(cco2ts,alternative="stationary")
+print(cadf)
+#FTR null hypot of nonstationarity
+#attempt to transform ts to be stationary
+cco2tsdiff<-diff(cco2ts,lag=1)
+cadfdiff<-adf.test(cco2tsdiff,alternative="stationary")
+print(cadfdiff)
+#P=0.06182. This was the best I was able to obtain after playing around with diff'rent lags.
 
 
-
-abund.comp <- decompose(abund.ts)
-# decomposition categories
-plot(abund.comp)
-#3. Test whether your data meet the assumption of stationarity.
-adf.raw <- adf.test(abund.ts, alternative = "stationary")
-print(adf.raw$p.value)
-#for plot #18, the ts is NOT stationary: P=.77
-
-#4. If it does not meet this assumption, explore ways to make your data stationary.
-abund.ts.diff <- diff(abund.ts,lag=1)
-adf.diff <- adf.test(abund.ts.diff, alternative = "stationary")
-adf.diff$p.value
-#now P=0.01, so null hypot of nonstationarity is rejected
-plot.ts(abund.ts.diff, type = "l", ylab = "Rodent Abundance (#/hectare)", xlab = "Time (year)", las = 1)
+#plot.ts(abund.ts, type = "l", ylab = "Rodent Abundance (#/hectare)", xlab = "Time (year)", las = 1)
 #5. Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(abund.ts.diff)
-acf(abund.ts)
-pacf(abund.ts.diff)
-pacf(abund.ts)
+acf(cco2tsdiff)
+acf(cco2ts)
+pacf(cco2tsdiff)
+pacf(cco2ts)
+#look fine even without the differencing
+
+
+hnco2r<-hnco2[,-1]
+hnco2ts<-ts(hnco2r$co2avg, frequency=2,start=c(2006,1))
+plot.ts(hnco2ts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+hnco2.sm<-SMA(hnco2r$co2avg,n=2)
+plot(hnco2.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160))
+lines(hnco2r$co2avg, col="black")
+legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+#decomposition categs
+hn.comp<-decompose(hnco2ts)
+plot(hn.comp)
+#test for stationarity
+hnadf<-adf.test(hnco2ts,alternative="stationary")
+print(hnadf)
+#FTR null hypot of nonstationarity
+#attempt to transform ts to be stationary
+hnco2tsdiff<-diff(hnco2ts,lag=1)
+hnadfdiff<-adf.test(hnco2tsdiff,alternative="stationary")
+print(hnadfdiff)
+#P=0.06182. This was the best I was able to obtain after playing around with diff'rent lags.
+
+#5. Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
+acf(hnco2tsdiff)
+acf(hnco2ts)
+pacf(hnco2tsdiff)
+pacf(hnco2ts)
+#look fine even without the differencing
+
+
+fitc<-auto.arima(cco2tsdiff,ic="aic",trace=T)
+fitc<-arima(cco2tsdiff,c(0,0,0),seasonal=list(order=c(2,1,0),period=2),include.mean=T)
+
+
 
 #6. Use the tools outlined in the Handout to create an ARMA model.
 fit18<-auto.arima(abund.ts,ic="aic",trace=T)
@@ -363,6 +393,12 @@ tsdiag(fit18)
 pred18 <- predict(fit18, n.ahead = 20)
 ts.plot(abund.ts, pred18$pred, lty = c(1,3))
 
+#abund.sm <- SMA(abund$nn, n = 2)#used 2 bc we have condensed to hexamonthly datapoints
+#plot(abund.sm, type = "l", col = "#56e4c6", ylab = "Rodent Abundance (#/hectare)",
+#xlab = "Sample", las = 1, ylim = c(0, 500))
+#lines(abund$nn, col = "black")
+#legend(0, 475, col = c("#56e4c6", "black"), lty = c(1,1),
+#c("smooth", "non-smooth"), bty = "n", cex = 1)
 
 ```
 ## 9) Looking at the effect of treatment on the change in N mineralization over the years- time series analysis 
