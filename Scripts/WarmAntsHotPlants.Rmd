@@ -1,6 +1,5 @@
 ---
-title: Responses of Plants and Ants to Soil Warming and N Fertilization at Harvard
-  Forest
+title: "Responses of Plants and Ants to Soil Warming and N Fertilization at Harvard Forest"
 author: "Roy Moger-Reischer and Katie Beidler"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: pdf_document
@@ -22,16 +21,16 @@ clr = function() {
   rm(list = ll, envir = ENV)
 }
 getwd() 
-setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
-
+#setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
+#setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro")
 ```
 ### Install Packages
 This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
 ```{r results='hide', message=FALSE, warning=FALSE} 
 
-package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2',
-'cowplot', 'MullerPlot', 'RColorBrewer', 'reshape2', 'lubridate',
-'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans')
+package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2', 'cluster',
+'cowplot', 'MullerPlot', 'RColorBrewer', 'reshape2', 'lubridate', 'BiodiversityR',
+'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools', 'CatterPlots')
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
 install.packages(package, repos='http://cran.us.r-project.org')
@@ -42,11 +41,21 @@ library(package, character.only = TRUE) }
 ### Load datasets
 The R code chunk below, does the following: Loads in the plant dataset (explanation), ant dataset (explanation)...Describe the different datasets here
 ```{r}
-plant = read.csv("./Data/HF_plants.csv")
-ant = read.csv("./Data/HF_ants.csv")
-nmin = read.csv("./Data/HF_nmin.csv")
-resp = read.csv("./Data/HF_soilresp.csv")
-temp = read.csv("./Data/HF_soiltemp.csv")
+#plant = read.csv("./Data/HF_plants.csv")
+#ant = read.csv("./Data/HF_ants.csv")
+#nmin = read.csv("./Data/HF_nmin.csv")
+#resp = read.csv("./Data/HF_soilresp.csv")
+#temp = read.csv("./Data/HF_soiltemp.csv")
+
+plant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_plants.csv")
+ant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_ants.csv")
+nmin = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_nmin.csv")
+resp = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soilresp.csv")
+temp = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soiltemp.csv")
+cco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\Cflux.csv")
+hco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\Hflux.csv")
+hnco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HNflux.csv")
+cco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\Cflux.csv")
 ```
 ## 2) Data Wrangling
 ```{r}
@@ -61,7 +70,7 @@ ant_07 = filter(ant, year == 2007)
 ant_08 = filter(ant, year == 2008)
 ant_09 = filter(ant, year == 2009)
 
-# Separating out the treatments from the site by species matricies 
+# Separating out the treatments from the site by species matrices 
 plant_06_sbys = plant_06[ ,4:43]
 plant_07_sbys = plant_07[ ,4:43]
 plant_08_sbys = plant_08[ ,4:43]
@@ -299,11 +308,84 @@ mycolnames<-colnames(sbs2009plants.sortedYtt, do.NULL = TRUE, prefix = "col")
 ```
 ## 8) Looking at the effect of treatment on the change in soil respiration over the years- time series analysis 
 ```{r}
+myCO2ts<-resp[with(resp,order(trt,year,month)),]
+myCO2ts<-myCO2ts[-1,]
+myC_CO2ts<-filter(myCO2ts, trt=="C") %>% group_by(year, month)
+myCts<-(count(myC_CO2ts,wt=co2flux))
+myH_CO2ts<-filter(myCO2ts, trt=="H")
+myHN_CO2ts<-filter(myCO2ts, trt=="HN")
+myN_CO2ts<-filter(myCO2ts, trt=="N")
+#<- filter(resp, taxa=="Rodent") %>% filter(plot_id==18) %>% group_by(year, month, plot_id) %>% count(species_id)
+#myCO2ts$season <- NA
+#myCO2ts$season <- myCO2ts$month %in% c(6:10)
+#myCO2ts$season <- ifelse(myCO2ts$season == TRUE, "rain", "norain")
+myCO2ts<-group_by(myCO2ts, year, month)
+tester<-count(myCO2ts,wt=co2flux)
+
+abund$nn <- abund$nn * 4
+C_ts <- ts(abund$nn, frequency = 2, start = c(1977, 2))
+plot.ts(abund.ts, type = "l", ylab = "Rodent Abundance (#/hectare)", xlab = "Time (year)", las = 1, ylim = c(0, 500))
+#2
+abund.sm <- SMA(abund$nn, n = 2)#used 2 bc we have condensed to hexamonthly datapoints
+plot(abund.sm, type = "l", col = "#56e4c6", ylab = "Rodent Abundance (#/hectare)",
+xlab = "Sample", las = 1, ylim = c(0, 500))
+lines(abund$nn, col = "black")
+legend(0, 475, col = c("#56e4c6", "black"), lty = c(1,1),
+c("smooth", "non-smooth"), bty = "n", cex = 1)
+
+
+
+abund.comp <- decompose(abund.ts)
+# decomposition categories
+plot(abund.comp)
+#3. Test whether your data meet the assumption of stationarity.
+adf.raw <- adf.test(abund.ts, alternative = "stationary")
+print(adf.raw$p.value)
+#for plot #18, the ts is NOT stationary: P=.77
+
+#4. If it does not meet this assumption, explore ways to make your data stationary.
+abund.ts.diff <- diff(abund.ts,lag=1)
+adf.diff <- adf.test(abund.ts.diff, alternative = "stationary")
+adf.diff$p.value
+#now P=0.01, so null hypot of nonstationarity is rejected
+plot.ts(abund.ts.diff, type = "l", ylab = "Rodent Abundance (#/hectare)", xlab = "Time (year)", las = 1)
+#5. Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
+acf(abund.ts.diff)
+acf(abund.ts)
+pacf(abund.ts.diff)
+pacf(abund.ts)
+
+#6. Use the tools outlined in the Handout to create an ARMA model.
+fit18<-auto.arima(abund.ts,ic="aic",trace=T)
+fit18<-arima(abund.ts,c(1,0,0),seasonal=list(order=c(2,1,0),period=2),include.mean=T)
+#model is order (1,0,0) with nonzero mean
+tsdiag(fit18)
+pred18 <- predict(fit18, n.ahead = 20)
+ts.plot(abund.ts, pred18$pred, lty = c(1,3))
+
 
 ```
 ## 9) Looking at the effect of treatment on the change in N mineralization over the years- time series analysis 
 ```{r}
 
 ```
+## 10) TESTING PRACTICE WITH CATTERPLOT
+```{r}
+library(CatterPlots)
+x <- -10:10
+y <- -x^2 + 10
+purr <- catplot(xs=x, ys=y, cat=3, catcolor=c(0,1,1,1))
+cats(purr, -x, -y, cat=4, catcolor=c(1,0,1,1))
 
+# for more fun ...
+meow <- multicat(xs=x, ys=y, cat=c(1,2,3), catcolor=list(c(1,1,0,1),c(0,1,1,1)), canvas=c(-0.1,1.1, -0.1, 1.1))
+morecats(purr, x, 10*sin(x)+40, size=0.05, cat=c(4,5,6), catcolor=list(c(0,0,1,1),c(0,1,0,1)), type="line")
+
+# random cats
+meow <- multicat(xs=x, ys=rnorm(21),
+                 cat=c(1,2,3,4,5,6,7,8,9,10,11),
+                 catcolor=list(c(1,0,0,1)),
+                 canvas=c(-0.1,1.1, -0.1, 1.1),
+                 xlab="some cats", ylab="other cats", main="Random Cats")
+```
 
