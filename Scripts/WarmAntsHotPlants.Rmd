@@ -30,12 +30,13 @@ This analysis will require several packages. The require() function in R returns
 
 package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2', 'cluster',
 'cowplot', 'MullerPlot', 'RColorBrewer', 'reshape2', 'lubridate', 'BiodiversityR',
-'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools', 'CatterPlots')
+'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
 install.packages(package, repos='http://cran.us.r-project.org')
 library(package, character.only = TRUE) }
 }
+install_github("Gibbsdavidl/CatterPlots")
 ```
 ## 2) LOADING DATA
 ### Load datasets
