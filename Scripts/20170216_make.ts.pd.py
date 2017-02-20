@@ -1,18 +1,8 @@
 from __future__ import division
-import sys;
-import math;
-import re;
-import subprocess;
-import os
+import sys;import math; import re; import subprocess; import os
 from random import choice, randrange
-import matplotlib.pyplot as plt;
-import numpy as np;
-import scipy as sc;
-from scipy import stats;
-import scipy.stats.distributions
-import csv;
-import pandas as pd;
-import itertools
+import matplotlib.pyplot as plt; import numpy as np; import scipy as sc; from scipy import stats; import scipy.stats.distributions
+import csv; import pandas as pd; import itertools
 
 
 '''def chooseseason(month):
@@ -28,8 +18,6 @@ import itertools
     else:
         row = "??"
     return row'''
-
-
 def chooseseason(month):
     row = ''
     if 4 <= month <= 9:
@@ -39,7 +27,6 @@ def chooseseason(month):
     else:
         row = "??"
     return row
-
 
 def makets(thedf, OP):
     thedf['season'] = pd.Series([chooseseason(x) for x in thedf['month']], index=thedf.index)#add a column to the df with
@@ -71,7 +58,7 @@ try:
     hco2=open("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\hflux.csv",'w')
     hnco2=open("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\hnflux.csv",'w')
     nco2=open("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\nflux.csv",'w')
-    c=makets(cdf,cco2); h=makets(hdf,hco2);hn= makets(hndf,hnco2);n= makets(ndf,nco2)
+    c=makets(cdf,cco2); h=makets(hdf,hco2); hn= makets(hndf,hnco2); n= makets(ndf,nco2)
     
 finally:
     cco2.close(); hco2.close(), hnco2.close(), nco2.close()
@@ -88,8 +75,3 @@ ndff = ndf
 ndff['e'] = pd.Series([chooseseason(x) for x in ndff['month']], index=ndff.index)
 
 print(chooseseason(6))
-
-
-
-
-
