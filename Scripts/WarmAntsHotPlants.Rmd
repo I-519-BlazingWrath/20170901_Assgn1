@@ -21,17 +21,14 @@ knitr::opts_chunk$set(echo = TRUE)
 #  rm(list = ll, envir = ENV)
 #}
 getwd() 
-<<<<<<< HEAD
-=======
 #setwd("/Users/bhbeidler/GitHub/QB2017_DivPro")
 #setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro")
->>>>>>> upstream/master
 ```
 ### Install Packages
 This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
 ```{r results='hide', message=FALSE, warning=FALSE} 
 package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2',
-'cowplot', 'MullerPlot', 'RColorBrewer', 'reshape2', 'lubridate','wesanderson',
+'cowplot', 'MullerPlot', 'RColorBrewer','lubridate', 'reshape2', 'lubridate','wesanderson',
 'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans')
 
 for (package in package.list) {
@@ -46,10 +43,11 @@ install_github("Gibbsdavidl/CatterPlots")
 The R code chunk below, does the following: Loads in the plant dataset (explanation), ant dataset (explanation)...Describe the different datasets here
 ```{r}
 #plant = read.csv("./Data/HF_plants.csv")
+#plant_treat = read.csv("./Data/HF_plants_treat.csv")
 #ant = read.csv("./Data/HF_ants.csv")
-#nmin = read.csv("./Data/HF_nmin.csv")
-#resp = read.csv("./Data/HF_soilresp.csv")
-#temp = read.csv("./Data/HF_soiltemp.csv")
+#nmin = read.csv("./Data/HF_nmin.csv", stringsAsFactors = FALSE)
+#resp = read.csv("./Data/HF_soilresp.csv", stringsAsFactors = FALSE)
+#temp = read.csv("./Data/HF_soiltemp.csv", stringsAsFactors = FALSE)
 
 plant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_plants.csv")
 ant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_ants.csv")
@@ -95,10 +93,9 @@ ant_08_sbys = ant_08[ ,4:18]
 ant_09_sbys = ant_09[ ,4:18]
 ```
 ## 2) Describe how richness and biodiversity estimates vary among sites.
-### Boxlots of Richness/ diversity for the different treatments/ years
-### Rank abundance curves
+### Richness/ diversity for the different treatments/ years
 ```{r}
-# Good's Coverage - Checking the sampling effort for both the ant and plant datasets
+# Good's Coverage - Checking the sampling effort 
 C = function(x = ""){
   1 - (rowSums(x == 1) / rowSums(x))
 }
@@ -171,12 +168,12 @@ P_PERMA.08
 P_PERMA.09
 ```
 
-## 5) Testing H2: plant richness differs among years and soil treatments 
+## 4) Testing H2: plant richness differs among years and soil treatments 
 ```{r}
 # Calculate observed richness from time-by-species matrix
-p_richness = as.data.frame(rowSums(plant[,-c(1:5)] > 0)) 
+p_richness = as.data.frame(rowSums(plant_treat[,-c(1:5)] > 0)) 
 # Create data frame with experimental design and richness data
-p_rich.all = data.frame(plant[,1:5,], p_richness)
+p_rich.all = data.frame(plant_treat[,1:5,], p_richness)
 # Rename column
 names(p_rich.all)[6] = "richness"
 # avg. richness per group
@@ -190,13 +187,12 @@ p_rich.plot = ggplot(p_rich.treat.plot, aes(x = year, y = mean, color = as.facto
                geom_point(size = 2, show.legend = T) +
                geom_line(size = 0.75) +
                geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
-               scale_color_manual(values = wes_palette("Moonrise1", 4, type = "discrete"),name="Soil  
-               Treatment",labels=c("Control", "Heated", "Heated plus Nitrogen", "Nitrogen")) +
+               scale_color_manual(values = wes_palette("Moonrise1", 4, type = "discrete"),name="Soil Treatment",labels=c("Control", "Heated", "Heated plus Nitrogen", "Nitrogen")) +
                xlim(2006, 2009) + xlab("Year") + ylab("Richness") +
                theme_classic(base_size=20)+
                theme(axis.line.x = element_line(color = "black"), axis.line.y = element_line(color ="black"))
 plot(p_rich.plot)
-ggsave("./PlantRichTime.jpeg", plot=p_rich.plot)
+ggsave("./Figures/PlantRichTime.jpeg", plot=p_rich.plot)
 
 # 3. Perform an RM-ANOVA and construct a F-test using the AR(1)
 p_rich.rm = lme(richness ~ year + heat_treat + N_treat * heat_treat * N_treat * year, random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = p_rich.all) 
@@ -209,10 +205,10 @@ pander(anova(p_rich.rm))
 ## 5) Testing H3: plant diversity differs among years and soil treatments 
 ```{r}
 # Calculate diveristy from time-by-species matrix
-p_diversity = diversity(plant[,-c(1:5)], "shannon")
+p_diversity = diversity(plant_treat[,-c(1:5)], "shannon")
 
 # Create data frame with experimental design and diversity data
-p_div.all = data.frame(plant[,1:5,], p_diversity)
+p_div.all = data.frame(plant_treat[,1:5,], p_diversity)
 # Rename column
 names(p_div.all)[6] = "diversity"
 
@@ -223,13 +219,12 @@ p_div.plot = ggplot(p_div.treat.plot, aes(x = year, y = mean, color = as.factor(
                geom_point(size = 2, show.legend = T) +
                geom_line(size = 0.75) +
                geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
-               scale_color_manual(values = wes_palette("Moonrise1", 4, type = "discrete"),name="Soil  
-               Treatment",labels=c("Control", "Heated", "Heated plus Nitrogen", "Nitrogen")) +
+               scale_color_manual(values = wes_palette("Moonrise1", 4, type = "discrete"),name="Soil Treatment",labels=c("Control", "Heated", "Heated plus Nitrogen", "Nitrogen")) +
                xlim(2006, 2009) + xlab("Year") + ylab("Shannon's Diversity Index")+
                theme_classic(base_size=25)+
                theme(axis.line.x = element_line(color = "black"),axis.line.y = element_line(color = "black"))
 plot(p_div.plot)
-ggsave("./PlantDivTime.jpeg", plot=p_div.plot)
+ggsave("./Figures/PlantDivTime.jpeg", plot=p_div.plot)
  
 # Perform an RM-ANOVA and construct a F-test using the AR(1)
 p_div.rm = lme(diversity ~ year + heat_treat + N_treat * heat_treat * N_treat * year, random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = p_div.all) # Look at detailed output
@@ -238,8 +233,7 @@ anova(p_div.rm)
 set.caption("RMANOVA for Plant Diversity Data") 
 pander(anova(p_div.rm))
 ```
-
-## 7) Testing H4: Soil respiration is positively correlated with richness
+## 6) Testing H4: Soil respiration is positively correlated with richness
 ```{r}
 plants.sortedT = arrange(plant, treatment)
 plants.sorted = arrange(plants.sortedT,year)
@@ -280,8 +274,7 @@ temporary_soil = my2009soilenv[-9]
 sbs2009soilen = na.omit(as.matrix(temporary_soil[8:11]))
 mycolnames = colnames(sbs2009plants.sortedYtt, do.NULL = TRUE, prefix = "col")
 ```
-
-## 8) Plotting the time series 
+## 7) Looking at the effect of treatment on the change in soil respiration over the years- time series analysis 
 ```{r}
 #abund.sm <- SMA(abund$nn, n = 2)#used 2 bc we have condensed to hexamonthly datapoints
 #plot(abund.sm, type = "l", col = "#56e4c6", ylab = "Rodent Abundance (#/hectare)",
@@ -456,14 +449,8 @@ ts.plot(hco2ts, predh$pred, lty = c(1,3))
 
 
 ```
-## 9) Looking at the effect of treatment on the change in soil respiration over the years- time series analysis 
-```{r}
 
-
-```
-
-
-## 10) Looking at the effect of treatment on the change in N mineralization over the years- time series analysis 
+## 8) Looking at the effect of treatment on the change in N mineralization over the years- time series analysis 
 ```{r}
 
 
@@ -764,8 +751,7 @@ ts.plot(mineralNminnts, predmineralNminn$pred, lty = c(1,3))
 
 ```
 
-
-## 10) TESTING PRACTICE WITH CATTERPLOT
+## 9) TESTING PRACTICE WITH CATTERPLOT
 ```{r}
 library(CatterPlots)
 x <- -10:10
@@ -783,5 +769,33 @@ meow <- multicat(xs=x, ys=rnorm(21),
                  catcolor=list(c(1,0,0,1)),
                  canvas=c(-0.1,1.1, -0.1, 1.1),
                  xlab="some cats", ylab="other cats", main="Random Cats")
+```
+## 10) Plotting Soil Respiration over time 
+```{r}
+resp = resp %>%
+    filter(year %in% c("2006", "2007", "2008", "2009"))
+resp$date = as.Date(resp$date, format = "%m/%d/%Y")
+resp$doy = yday(resp$date)
+
+resp.plot = qplot(doy, co2flux, data = resp, geom="smooth") +
+         stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
+         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
+        xlab("Day of the Year") +
+        ylab("CO2 Flux") 
+resp.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil Respiration 2006-2009")
+
+resp_yr.plot = qplot(doy, co2flux, data = resp, colour = as.factor(year), geom="smooth", se=FALSE) +
+      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+resp_yr.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("CO2 Flux)") + theme(text = element_text(size=18))
+
+resp_trt.plot = qplot(doy, co2flux, data = resp, colour = as.factor(trt), geom="smooth", se=FALSE) +
+      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+resp_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("CO2 Flux)") + theme(text = element_text(size=18))
+
 ```
 
