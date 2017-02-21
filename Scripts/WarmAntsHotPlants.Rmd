@@ -59,10 +59,10 @@ hco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\hflux_cure.csv")
 hnco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\hnflux_cure.csv")
 nco2<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\nflux_cure.csv")
 
-minNminc<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminc.csv")
-minNminh<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminh.csv")
-minNminhn<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminhn.csv")
-minNminn<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminn.csv")
+mineralNminc<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminc.csv")
+mineralNminh<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminh.csv")
+mineralNminhn<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminhn.csv")
+mineralNminn<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\minNminn.csv")
 orgNminc<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\orgNminc.csv")
 orgNminh<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\orgNminh.csv")
 orgNminhn<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\orgNminhn.csv")
@@ -495,110 +495,98 @@ ts.plot(hco2ts, predh$pred, lty = c(1,3))
 
 ```
 ## 9) Looking at the effect of treatment on the change in N mineralization over the years- time series analysis 
+
 ```{r}
-
-
 ###################################################################ORGANIC HORIZON
 
 #control treatment: organic horizon
 orgNmincr<-orgNminc[,-1]
 orgNmincts<-ts(orgNmincr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(orgNmincts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(orgNmincts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 orgNminc.sm<-SMA(orgNmincr$Nmin,n=2)
-plot(orgNminc.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(orgNmincr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(orgNminc.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,100),main="Control Treatment")
+lines(orgNmincr$Nminavg, col="black")
+legend(6, 100, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 orgNminc.comp<-decompose(orgNmincts)
 plot(orgNminc.comp)
 #test for stationarity
 orgNmincadf<-adf.test(orgNmincts,alternative="stationary")
 print(orgNmincadf)
-#FTR null hypot of nonstationarity
-#attempt to transform ts to be stationary
-orgNminctsdiff<-diff(orgNmincts,lag=2)
-orgNmincadfdiff<-adf.test(orgNminctsdiff,alternative="stationary")
-print(orgNmincadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#Reject null hypot of nonstationarity. P <= 0.01
+
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(orgNminctsdiff)
+
 acf(orgNmincts)
-pacf(orgNminctsdiff)
+
 pacf(orgNmincts)
-#look fine even without the differencing
+#no significant terms
 
 fitorgNminc<-auto.arima(orgNmincts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
+#" Best model: ARIMA(0,0,0)(0,0,1)[2] with non-zero mean "
 #Model is seasonal
-fitorgNminc<-arima(orgNmincts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+fitorgNminc<-arima(orgNmincts,c(0,0,0),seasonal=list(order=c(0,0,1),period=2),include.mean=T)
 tsdiag(fitorgNminc)
 predorgNminc <- predict(fitorgNminc, n.ahead = 8)
 ts.plot(orgNmincts, predorgNminc$pred, lty = c(1,3))
-
+#seasonality is not predicted to stick
+```
+```{r}
 #Heating treatment: organic horizon
 orgNminhr<-orgNminh[,-1]
 orgNminhts<-ts(orgNminhr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(orgNminhts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(orgNminhts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 orgNminh.sm<-SMA(orgNminhr$Nmin,n=2)
-plot(orgNminh.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(orgNminhr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(orgNminh.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,150),main="Heat Treatment")
+lines(orgNminhr$Nminavg, col="black")
+legend(6, 120, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 orgNminh.comp<-decompose(orgNminhts)
 plot(orgNminh.comp)
 #test for stationarity
 orgNminhadf<-adf.test(orgNminhts,alternative="stationary")
 print(orgNminhadf)
-#FTR null hypot of nonstationarity
+#FTR null hypot of nonstationarity. P = 0.9052
 #attempt to transform ts to be stationary
-orgNminhtsdiff<-diff(orgNminhts,lag=2)
+orgNminhtsdiff<-diff(orgNminhts,lag=1)
 orgNminhadfdiff<-adf.test(orgNminhtsdiff,alternative="stationary")
 print(orgNminhadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#P=0.736. Still fails the assumption of stationarity.
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(orgNminhtsdiff)
-acf(orgNminhts)
-pacf(orgNminhtsdiff)
-pacf(orgNminhts)
-#look fine even without the differencing
+acf(orgNminhtsdiff); acf(orgNminhts); pacf(orgNminhtsdiff); pacf(orgNminhts)
+#no significant terms with or without differencing. Looks better with the differencing, though
 
 fitorgNminh<-auto.arima(orgNminhts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
+#"Best model: ARIMA(0,0,0)(1,0,0)[2] with zero mean"
 #Model is seasonal
-fitorgNminh<-arima(orgNminhts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+fitorgNminh<-arima(orgNminhts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=F)
 tsdiag(fitorgNminh)
 predorgNminh <- predict(fitorgNminh, n.ahead = 8)
 ts.plot(orgNminhts, predorgNminh$pred, lty = c(1,3))
-
+```
+```{r}
 #H+N treatment: organic horizon
 orgNminhnr<-orgNminhn[,-1]
 orgNminhnts<-ts(orgNminhnr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(orgNminhnts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(orgNminhnts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 orgNminhn.sm<-SMA(orgNminhnr$Nmin,n=2)
-plot(orgNminhn.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(orgNminhnr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(orgNminhn.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,100),main="Heat + N Treatment")
+lines(orgNminhnr$Nminavg, col="black")
+legend(6, 100, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 orgNminhn.comp<-decompose(orgNminhnts)
 plot(orgNminhn.comp)
 #test for stationarity
 orgNminhnadf<-adf.test(orgNminhnts,alternative="stationary")
 print(orgNminhnadf)
-#FTR null hypot of nonstationarity
-#attempt to transform ts to be stationary
-orgNminhntsdiff<-diff(orgNminhnts,lag=2)
-orgNminhnadfdiff<-adf.test(orgNminhntsdiff,alternative="stationary")
-print(orgNminhnadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#Reject null hypot of nonstationarity. P<=0.01
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(orgNminhntsdiff)
 acf(orgNminhnts)
-pacf(orgNminhntsdiff)
 pacf(orgNminhnts)
-#look fine even without the differencing
+#look fine
 
 fitorgNminhn<-auto.arima(orgNminhnts,ic="aic",trace=T)
 #"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
@@ -608,192 +596,186 @@ tsdiag(fitorgNminhn)
 predorgNminhn <- predict(fitorgNminhn, n.ahead = 8)
 ts.plot(orgNminhnts, predorgNminhn$pred, lty = c(1,3))
 
-
+```
+```{r}
 #N treatment: organic horizon
 orgNminnr<-orgNminn[,-1]
 orgNminnts<-ts(orgNminnr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(orgNminnts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(orgNminnts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 orgNminn.sm<-SMA(orgNminnr$Nmin,n=2)
-plot(orgNminn.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(orgNminnr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(orgNminn.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,100),main="N Treatment")
+lines(orgNminnr$Nminavg, col="black")
+legend(6, 100, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 orgNminn.comp<-decompose(orgNminnts)
 plot(orgNminn.comp)
 #test for stationarity
 orgNminnadf<-adf.test(orgNminnts,alternative="stationary")
 print(orgNminnadf)
-#FTR null hypot of nonstationarity
+#FTR null hypot of nonstationarity. P=0.9715
 #attempt to transform ts to be stationary
-orgNminntsdiff<-diff(orgNminnts,lag=2)
+orgNminntsdiff<-diff(orgNminnts,lag=1)
 orgNminnadfdiff<-adf.test(orgNminntsdiff,alternative="stationary")
 print(orgNminnadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#P=0.7549. Still FTR the null hypothesis of stationarity.
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
 acf(orgNminntsdiff)
 acf(orgNminnts)
 pacf(orgNminntsdiff)
 pacf(orgNminnts)
-#look fine even without the differencing
+#looks fine even without the differencing
 
 fitorgNminn<-auto.arima(orgNminnts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
-#Model is seasonal
-fitorgNminn<-arima(orgNminnts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+#"Best model: ARIMA(1,0,0) with non-zero mean"
+#Model is not seasonal
+fitorgNminn<-arima(orgNminnts,c(1,0,0),include.mean=T)
 tsdiag(fitorgNminn)
 predorgNminn <- predict(fitorgNminn, n.ahead = 8)
 ts.plot(orgNminnts, predorgNminn$pred, lty = c(1,3))
-
+```
+```{r}
 ########################################################################################################################
 #MINERAL HORIZON
 
 #control treatment: organic horizon
 mineralNmincr<-mineralNminc[,-1]
 mineralNmincts<-ts(mineralNmincr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(mineralNmincts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(mineralNmincts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 mineralNminc.sm<-SMA(mineralNmincr$Nmin,n=2)
-plot(mineralNminc.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(mineralNmincr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(mineralNminc.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,60),main="Control Treatment")
+lines(mineralNmincr$Nminavg, col="black")
+legend(6, 60, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 mineralNminc.comp<-decompose(mineralNmincts)
 plot(mineralNminc.comp)
 #test for stationarity
 mineralNmincadf<-adf.test(mineralNmincts,alternative="stationary")
 print(mineralNmincadf)
-#FTR null hypot of nonstationarity
-#attempt to transform ts to be stationary
-mineralNminctsdiff<-diff(mineralNmincts,lag=2)
-mineralNmincadfdiff<-adf.test(mineralNminctsdiff,alternative="stationary")
-print(mineralNmincadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#Rject null hypot of nonstationarity. P <= 0.01
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(mineralNminctsdiff)
 acf(mineralNmincts)
-pacf(mineralNminctsdiff)
 pacf(mineralNmincts)
-#look fine even without the differencing
+#look fine, no significant terms
 
 fitmineralNminc<-auto.arima(mineralNmincts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
-#Model is seasonal
-fitmineralNminc<-arima(mineralNmincts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+#"Best model: ARIMA(0,0,0) with non-zero mean"
+#Model is not seasonal
+fitmineralNminc<-arima(mineralNmincts,c(0,0,0),include.mean=T)
 tsdiag(fitmineralNminc)
 predmineralNminc <- predict(fitmineralNminc, n.ahead = 8)
 ts.plot(mineralNmincts, predmineralNminc$pred, lty = c(1,3))
-
+```
+```{r}
 #Heating treatment: mineral horizon
 mineralNminhr<-mineralNminh[,-1]
 mineralNminhts<-ts(mineralNminhr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(mineralNminhts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(mineralNminhts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 mineralNminh.sm<-SMA(mineralNminhr$Nmin,n=2)
-plot(mineralNminh.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(mineralNminhr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(mineralNminh.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,60),main="Heat Treatment")
+lines(mineralNminhr$Nminavg, col="black")
+legend(6, 60, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 mineralNminh.comp<-decompose(mineralNminhts)
 plot(mineralNminh.comp)
 #test for stationarity
 mineralNminhadf<-adf.test(mineralNminhts,alternative="stationary")
 print(mineralNminhadf)
-#FTR null hypot of nonstationarity
+#FTR null hypot of nonstationarity. P = 0.9112
 #attempt to transform ts to be stationary
-mineralNminhtsdiff<-diff(mineralNminhts,lag=2)
+mineralNminhtsdiff<-diff(mineralNminhts,lag=1)
 mineralNminhadfdiff<-adf.test(mineralNminhtsdiff,alternative="stationary")
 print(mineralNminhadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#P=0.9697. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(mineralNminhtsdiff)
 acf(mineralNminhts)
-pacf(mineralNminhtsdiff)
 pacf(mineralNminhts)
-#look fine even without the differencing
+#looks fine, there are no significant terms
 
 fitmineralNminh<-auto.arima(mineralNminhts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
-#Model is seasonal
-fitmineralNminh<-arima(mineralNminhts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+#"Best model: ARIMA(1,1,0) with drift"
+#Model is not seasonal
+fitmineralNminh<-arima(mineralNminhts,c(1,1,0),include.mean=T)
 tsdiag(fitmineralNminh)
 predmineralNminh <- predict(fitmineralNminh, n.ahead = 8)
 ts.plot(mineralNminhts, predmineralNminh$pred, lty = c(1,3))
-
+```
+```{r}
 #H+N treatment: mineral horizon
 mineralNminhnr<-mineralNminhn[,-1]
 mineralNminhnts<-ts(mineralNminhnr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(mineralNminhnts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(mineralNminhnts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 mineralNminhn.sm<-SMA(mineralNminhnr$Nmin,n=2)
-plot(mineralNminhn.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(mineralNminhnr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(mineralNminhn.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,60),main="Heat + N Treatment")
+lines(mineralNminhnr$Nminavg, col="black")
+legend(6, 60, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 mineralNminhn.comp<-decompose(mineralNminhnts)
 plot(mineralNminhn.comp)
 #test for stationarity
 mineralNminhnadf<-adf.test(mineralNminhnts,alternative="stationary")
 print(mineralNminhnadf)
-#FTR null hypot of nonstationarity
+#FTR null hypot of nonstationarity. P = 0.9112
 #attempt to transform ts to be stationary
-mineralNminhntsdiff<-diff(mineralNminhnts,lag=2)
+mineralNminhntsdiff<-diff(mineralNminhnts,lag=1)
 mineralNminhnadfdiff<-adf.test(mineralNminhntsdiff,alternative="stationary")
 print(mineralNminhnadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#P=0.9098. Not much improvement.
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
 acf(mineralNminhntsdiff)
 acf(mineralNminhnts)
 pacf(mineralNminhntsdiff)
 pacf(mineralNminhnts)
-#look fine even without the differencing
+#looks fine even without the differencing. No significant terms.
 
 fitmineralNminhn<-auto.arima(mineralNminhnts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
-#Model is seasonal
-fitmineralNminhn<-arima(mineralNminhnts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+#"Best model: ARIMA(1,1,0) with drift"
+#Model is not seasonal
+fitmineralNminhn<-arima(mineralNminhnts,c(1,1,0),include.mean=T)
 tsdiag(fitmineralNminhn)
 predmineralNminhn <- predict(fitmineralNminhn, n.ahead = 8)
 ts.plot(mineralNminhnts, predmineralNminhn$pred, lty = c(1,3))
 
-
+```
+```{r}
 #N treatment: mineral horizon
 mineralNminnr<-mineralNminn[,-1]
 mineralNminnts<-ts(mineralNminnr$Nminavg, frequency=2,start=c(2006,1))
-plot.ts(mineralNminnts,type="l", ylab="CO2 flux",xlab="Time (year)",las=1)
+plot.ts(mineralNminnts,type="l", ylab="Net NH4",xlab="Time (year)",las=1)
 mineralNminn.sm<-SMA(mineralNminnr$Nmin,n=2)
-plot(mineralNminn.sm,type = "l", col = "#56e4c6",ylab="CO2 flux",las=1,xlab="Timepoint",ylim=c(0,160),main="Heat + N Treatment")
-lines(mineralNminnr$co2avg, col="black")
-legend(0, 30, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
+plot(mineralNminn.sm,type = "l", col = "#56e4c6",ylab="Net NH4",las=1,xlab="Timepoint",ylim=c(0,60),main="N Treatment")
+lines(mineralNminnr$Nminavg, col="black")
+legend(6, 60, col = c("#56e4c6", "black"), lty = c(1,1),c("smooth", "non-smooth"), bty = "n", cex = 1.25)
 #decomposition categs
 mineralNminn.comp<-decompose(mineralNminnts)
 plot(mineralNminn.comp)
 #test for stationarity
 mineralNminnadf<-adf.test(mineralNminnts,alternative="stationary")
 print(mineralNminnadf)
-#FTR null hypot of nonstationarity
+#FTR null hypot of nonstationarity. P = 0.5125
 #attempt to transform ts to be stationary
-mineralNminntsdiff<-diff(mineralNminnts,lag=2)
+mineralNminntsdiff<-diff(mineralNminnts,lag=1)
 mineralNminnadfdiff<-adf.test(mineralNminntsdiff,alternative="stationary")
 print(mineralNminnadfdiff)
-#P=0.4931. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
+#P=0.9868. This is even less able to reject the null hypothesis of stationarity. Do not do the differencing.
 
 #Examine and plot time lags using the partial autocorrelation function (PACF) and autocorrelation function (ACR).
-acf(mineralNminntsdiff)
 acf(mineralNminnts)
-pacf(mineralNminntsdiff)
 pacf(mineralNminnts)
-#look fine even without the differencing
+#looks fine. There are no significant terms.
 
 fitmineralNminn<-auto.arima(mineralNminnts,ic="aic",trace=T)
-#"Best model: ARIMA(0,0,0)(1,0,0)[2] with non-zero mean"
-#Model is seasonal
-fitmineralNminn<-arima(mineralNminnts,c(0,0,0),seasonal=list(order=c(1,0,0),period=2),include.mean=T)
+#"Best model: ARIMA(1,1,0) with drift"
+#Model is not seasonal
+fitmineralNminn<-arima(mineralNminnts,c(1,1,0),include.mean=T)
 tsdiag(fitmineralNminn)
 predmineralNminn <- predict(fitmineralNminn, n.ahead = 8)
 ts.plot(mineralNminnts, predmineralNminn$pred, lty = c(1,3))
-
 ```
+
 
 
 ## 10) TESTING PRACTICE WITH CATTERPLOT
