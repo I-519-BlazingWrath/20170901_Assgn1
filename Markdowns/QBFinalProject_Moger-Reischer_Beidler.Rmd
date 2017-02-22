@@ -18,7 +18,8 @@ The overall objective of this project is to investigate whether soil warming and
 > ***Hypothesis 2***: Richness and diversity will increase over time with the addition of nitrogen
 
 ## BACKGROUND
-Write about study design/ methods/ Time period
+    Two of the most well-documented outcomes of anthropogenic global change are nitrogen deposition and climatic warming. In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the in-teractive effects of these two environmental changes on plant, arthro-pod, and soil microbe community composition, and soil respiration. Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 °C above ambient temperature.
+    In this analysis we evaluated primarily plant community and soil abiotic properties. Abundances of 40 plant species were censused each year 2006 - 2009. Soil abiotic variables were measured ~monthly during this time. We used R to explore the effects of treatment and time plant biodiversity and soil carbon and nitrogen dynamics.
 
 ## 1) SETUP
 ### A. Retrieve and Set your Working Directory
@@ -37,7 +38,7 @@ This analysis will require several packages. The require() function in R returns
 ```{r results='hide', message=FALSE, warning=FALSE} 
 package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape',
 'cowplot', 'MullerPlot', 'RColorBrewer','lubridate', 'reshape2', 'lubridate','wesanderson',
-'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans')
+'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
 
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
