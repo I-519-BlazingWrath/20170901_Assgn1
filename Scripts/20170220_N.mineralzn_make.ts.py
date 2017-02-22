@@ -2,7 +2,7 @@ from __future__ import division
 import sys;import math; import re; import subprocess; import os
 from random import choice, randrange
 import matplotlib.pyplot as plt; import numpy as np; import scipy as sc; from scipy import stats; import scipy.stats.distributions
-import csv; import pandas as pd; import itertools
+import csv; import pandas as pd; import itertools; import Bio
 
 
 '''def chooseseason(month):
