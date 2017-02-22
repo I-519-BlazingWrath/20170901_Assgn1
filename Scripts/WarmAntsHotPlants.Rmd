@@ -13,7 +13,6 @@ b. Is treatment type a significant predictor of site dissimilarity?
 ## 1) Setup 
 ### Retrieve and sSet your Working Directory
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 #clr = function() {
 #  ENV = globalenv()
 #  ll = ls(envir = ENV)
