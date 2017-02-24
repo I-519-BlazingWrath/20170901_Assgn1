@@ -18,8 +18,9 @@ The overall objective of this project is to investigate whether soil warming and
 > ***Hypothesis 2***: Richness and diversity will increase over time with the addition of nitrogen
 
 ## BACKGROUND
-    Two of the most well-documented outcomes of anthropogenic global change are nitrogen deposition and climatic warming. In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the in-teractive effects of these two environmental changes on plant, arthro-pod, and soil microbe community composition, and soil respiration. Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 °C above ambient temperature.
-    In this analysis we evaluated primarily plant community and soil abiotic properties. Abundances of 40 plant species were censused each year 2006 - 2009. Soil abiotic variables were measured ~monthly during this time. We used R to explore the effects of treatment and time plant biodiversity and soil carbon and nitrogen dynamics.
+Two of the most well-documented outcomes of anthropogenic global change are nitrogen deposition and climatic warming. In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the in-teractive effects of these two environmental changes on plant, arthro-pod, and soil microbe community composition, and soil respiration. Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 ?C above ambient temperature.
+    
+In this analysis we evaluated primarily plant community and soil abiotic properties. Abundances of 40 plant species were censused each year 2006 - 2009. Soil abiotic variables were measured ~monthly during this time. We used R to explore the effects of treatment and time plant biodiversity and soil carbon and nitrogen dynamics.
 
 ## 1) SETUP
 ### A. Retrieve and Set your Working Directory
@@ -103,12 +104,11 @@ p_rich.plot = ggplot(p_rich.treat.plot, aes(x = year, y = mean, color = as.facto
                geom_point(size = 2, show.legend = T) +
                geom_line(size = 0.75) +
                geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
-               scale_color_manual(values = wes_palette("Moonrise1", 4, type = "discrete"),name="Soil Treatment",labels=c("Control", "Heated", "Heated plus Nitrogen", "Nitrogen")) +
+               scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) +
                xlim(2006, 2009) + xlab("Year") + ylab("Richness") +
                theme_classic(base_size=15)+
                theme(axis.line.x = element_line(color = "black"), axis.line.y = element_line(color ="black"))
 plot(p_rich.plot)
-
 
 # Calculate diveristy from time-by-species matrix
 p_diversity = diversity(plant[,-c(1:5)], "shannon")
@@ -125,7 +125,7 @@ p_div.plot = ggplot(p_div.treat.plot, aes(x = year, y = mean, color = as.factor(
                geom_point(size = 2, show.legend = T) +
                geom_line(size = 0.75) +
                geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
-               scale_color_manual(values = wes_palette("Moonrise1", 4, type = "discrete"),name="Soil Treatment",labels=c("Control", "Heated", "Heated plus Nitrogen", "Nitrogen")) +
+               scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) +
                xlim(2006, 2009) + xlab("Year") + ylab("Shannon's Diversity Index")+
                theme_classic(base_size=15)+
                theme(axis.line.x = element_line(color = "black"),axis.line.y = element_line(color = "black"))
@@ -172,13 +172,13 @@ plant.total = turnover(df = plant.sp.abunds, time.var = "year",
                             replicate.var = "treatment",
                             metric = "total")
 # Calculate species gained
-plant.appearance = turnover(df = plant.taxa.abunds, time.var = "year",
+plant.appearance = turnover(df = plant.sp.abunds, time.var = "year",
                             species.var = "species",
                             abundance.var = "n",
                             replicate.var = "treatment",
                             metric = "appearance")
 # Calculate species lost
-plant.disappearance = turnover(df = plant.taxa.abunds, time.var = "year",
+plant.disappearance = turnover(df = plant.sp.abunds, time.var = "year",
                             species.var = "species",
                             abundance.var = "n",
                             replicate.var = "treatment",
@@ -199,12 +199,39 @@ plant.turn.plot = ggplot(plant.turnover, aes(x = year, y = turnover, color = met
   theme(legend.position = "bottom") +
   scale_color_grey()
 plot(plant.turn.plot)
-
 # Low turnover is indicative of a stable community and high turnover is indicative of a dynamic community
-```
-### B. Rank Shift
-```{r}
 
+# Abundance Plots
+p_abun.plot = ggplot(plant.sp.abunds, aes(year, n, color= as.factor(treatment))) + 
+              geom_point() +
+              geom_line(aes(color = as.factor(treatment))) +
+              facet_wrap(~species, nrow = 8) +
+              scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) + 
+              ylab("# of  Stems") + 
+              theme_bw() +
+              theme(axis.text.x = element_text(angle=70, vjust=0.5))
+
+# Abundances at time point 1
+p_abun.06 = dplyr::filter(plant.sp.abunds, year == "2006")
+p_abun.plot.06 = ggplot(p_abun.06 , aes(x = species, y = n)) + 
+                  geom_bar(stat = "identity") + 
+                  facet_wrap(~treatment, ncol = 1) +
+                  ylab("# of  Stems") +
+                  theme_bw() +
+                  theme(axis.text.x = element_text(angle=70, vjust=0.5)) 
+
+# Abundances at time point 2
+p_abun.09 = dplyr::filter(plant.sp.abunds, year == "2009")
+p_abun.plot.09 = ggplot(p_abun.09 , aes(x = species, y = n)) + 
+                  geom_bar(stat = "identity") + 
+                  facet_wrap(~treatment, ncol = 1) +
+                  ylab("# of  Stems") +
+                  theme_bw() +
+                  theme(axis.text.x = element_text(angle=70, vjust=0.5)) 
+
+```
+### C. Rank Shift
+```{r}
 # Calculate species abundances for each taxonomic group 
 plant.sp.abunds = p_long %>% 
                      group_by(year,treatment) %>% 
@@ -228,7 +255,25 @@ plot(rankshift.plot)
 portal.rankshift %>% 
   group_by (plot_type) %>% 
   summarise(mean = mean(MRS), cv = sd(MRS)/mean)
+
+# Rank Clock
+ag_plant.dat = aggregate(n ~ species * year * treatment, 
+                    data = subset(plant.sp.abunds, 
+                                    species == "denpun" |
+                                    species == "maican" | 
+                                    species == "vaccspp"| 
+                                    species == "gaupro"), FUN = mean)
+
+rclock_plot = ggplot(ag_plant.dat, aes(year, n, color = species)) + 
+        geom_line(size = 1) + coord_polar() + theme_bw() +
+        facet_wrap(~treatment) +
+        ylab("# of Stems") +
+        scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9")) +
+        ggtitle("Dominant species abundances \n for the different soil treatments, Harvard Forest \n")
+plot(rclock_plot)
 ```
+
+
 ## 4) TIME SERIES FOR SOIL MEASURMENTS 
 ```{r}
 resp = resp %>%
