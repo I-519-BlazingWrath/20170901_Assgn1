@@ -79,7 +79,7 @@ plant_07_sbys = plant_07[ ,6:43]
 plant_08_sbys = plant_08[ ,6:43]
 plant_09_sbys = plant_09[ ,6:43]
 ```
-## 3)  DATA VISUALIZATION & EDA
+## 3)  BIODIVERSITY DATA VISUALIZATION & PLOTS
 [plots that show richness for each site/ abundance for a particular species]
 Visualizing Beta Diversity
 ```{r}
@@ -131,7 +131,7 @@ p_div.plot = ggplot(p_div.treat.plot, aes(x = year, y = mean, color = as.factor(
                theme(axis.line.x = element_line(color = "black"),axis.line.y = element_line(color = "black"))
 plot(p_div.plot)
 ```
-## 4) HYPOTHESIS TESTING
+## 4) BIODIVERSITY HYPOTHESIS TESTING
 ```{r}
 p_rich.rm = lme(richness ~ year + heat_treat + N_treat * heat_treat * N_treat * year, random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = p_rich.all) 
 summary(p_rich.rm) # Obtain F-test
@@ -230,7 +230,7 @@ p_abun.plot.09 = ggplot(p_abun.09 , aes(x = species, y = n)) +
                   theme(axis.text.x = element_text(angle=70, vjust=0.5)) 
 
 ```
-### C. Rank Shift
+### B. Rank Shift
 ```{r}
 # Calculate species abundances for each taxonomic group 
 plant.sp.abunds = p_long %>% 
@@ -274,8 +274,10 @@ plot(rclock_plot)
 ```
 
 
-## 4) TIME SERIES FOR SOIL MEASURMENTS 
+## 4) SOIL MEASURMENTS 
+### A. Plots
 ```{r}
+# Soil respiration
 resp = resp %>%
     filter(year %in% c("2006", "2007", "2008", "2009"))
 resp$date = as.Date(resp$date, format = "%m/%d/%Y")
@@ -291,7 +293,6 @@ resp_yr.plot = qplot(doy, co2flux, data = resp, geom="smooth") +
 resp_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil Respiration 2006-2009")
 plot(resp_yr.plot)
 
-
 resp_trt.plot = qplot(doy, co2flux, data = resp, colour = as.factor(trt), geom="smooth", se=FALSE) +
       stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
       facet_wrap(~year, ncol = 1) +
@@ -299,6 +300,54 @@ resp_trt.plot = qplot(doy, co2flux, data = resp, colour = as.factor(trt), geom="
             panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 resp_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("CO2 Flux)") + theme(text = element_text(size=18))
 plot(resp_trt.plot)
+
+# N mineralization
+nmin = nmin %>%
+    filter(year %in% c( "2007", "2008"))
+nmin$date = as.Date(nmin$date, format = "%m/%d/%Y")
+nmin$doy = yday(nmin$date)
+nmin = na.remove(nmin)
+
+n03_yr.plot = qplot(doy, netno3, data = nmin, geom="smooth") +
+         stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
+         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
+        facet_wrap(hor~year)
+        xlab("Day of the Year") +
+        ylab("Net Nitrate") 
+nmin_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
+plot(n03_yr.plot)
+
+nh4_yr.plot = qplot(doy, netnh4, data = nmin, geom="smooth") +
+         stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
+         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
+        facet_wrap(hor~year)
+        xlab("Day of the Year") +
+        ylab("Net Ammonium") 
+nh4_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
+plot(nh4_yr.plot)
+
+no3_trt.plot = qplot(doy, netnh4, data = nmin, colour = as.factor(trt), geom="smooth", se=FALSE) +
+      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
+      facet_wrap(hor~year) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+resp_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("Total NO3)") + theme(text = element_text(size=18))
+plot(no3_trt.plot)
+
+nh4_trt.plot = qplot(doy, netnh4, data = nmin, colour = as.factor(trt), geom="smooth", se=FALSE) +
+      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
+      facet_wrap(hor~year) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+nh4_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("Total NH4)") + theme(text = element_text(size=18))
+plot(nh4_trt.plot)
+
+```
+### B. Hypothesis Testing
+```{r}
+
 ```
 
 
