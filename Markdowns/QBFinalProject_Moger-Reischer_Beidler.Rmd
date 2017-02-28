@@ -273,15 +273,16 @@ rclock_plot = ggplot(ag_plant.dat, aes(year, n, color = species)) +
 plot(rclock_plot)
 ```
 
-
 ## 4) SOIL MEASURMENTS 
 ### A. Plots
 ```{r}
 # Soil respiration
 resp = resp %>%
-    filter(year %in% c("2006", "2007", "2008", "2009"))
+    filter(year %in% c( "2006","2007", "2008", "2009"))
 resp$date = as.Date(resp$date, format = "%m/%d/%Y")
 resp$doy = yday(resp$date)
+
+resp = na.exclude(resp) 
 
 resp_yr.plot = qplot(doy, co2flux, data = resp, geom="smooth") +
          stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
@@ -303,7 +304,7 @@ plot(resp_trt.plot)
 
 # N mineralization
 nmin = nmin %>%
-    filter(year %in% c( "2007", "2008"))
+    filter(year %in% c("2006","2007", "2008", "2009"))
 nmin$date = as.Date(nmin$date, format = "%m/%d/%Y")
 nmin$doy = yday(nmin$date)
 nmin = na.remove(nmin)
@@ -346,8 +347,66 @@ plot(nh4_trt.plot)
 
 ```
 ### B. Hypothesis Testing
-```{r}
+```{r} 
+plant.treat.plot = group_by(resp, trt, year) %>%
+  summarise(mean = mean(co2flux), sd = sd(co2flux),n = n(),sem = sd/sqrt(n)) 
 
+# Trying different variance - covariance structures 
+# AR(1) covariance structure
+soil.rm1 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = resp) 
+summary(soil.rm1) # Obtain F-test
+anova(soil.rm1)
+
+# corARMA autoregressive moving average proccess 
+soil.rm2 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corCompSymm(form = ~ 1 | plot),data = resp) #
+summary(soil.rm2) # Obtain F-test
+anova(soil.rm2)
+
+# cirCAR1 cnt AR process
+soil.rm3 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corCAR1(form = ~ 1 | plot),data = resp) 
+summary(soil.rm3) # Obtain F-test
+anova(soil.rm3)
+
+# corARMA autoregressive moving average process, with arbitrary components
+soil.rm4 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corARMA(form = ~ 1 | plot, p = 1, q = 1),data = resp) 
+summary(soil.rm4) # Obtain F-test
+anova(soil.rm4)
+
+#corExp exponential spatial correlation.
+soil.rm5 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corExp(form = ~ 1 | plot),data = resp) 
+summary(soil.rm5) # Obtain F-test
+anova(soil.rm5)
+
+# CorGaus Gaussian spatial correlation.
+soil.rm6 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corGaus(form = ~ 1 | plot),data = resp) 
+summary(soil.rm6) # Obtain F-test
+anova(soil.rm6)
+
+# corLin	linear spatial correlation.
+soil.rm7 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corLin(form = ~ 1 | plot),data = resp) #
+summary(soil.rm7) # Obtain F-test
+anova(soil.rm7)
+
+# corRatio	Rational quadratics spatial correlation.
+soil.rm8 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corRatio(form = ~ 1 | plot),data = resp) #
+summary(soil.rm8) # Obtain F-test
+anova(soil.rm8)
+
+# corRatioSpher	spherical spatial correlation
+soil.rm9 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corSpher(form = ~ 1 | plot),data = resp) #
+summary(soil.rm9) # Obtain F-test
+anova(soil.rm9)
+
+# corSymm general correlation matrix, with no additional structure
+soil.rm10 = lme(co2flux ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corSpher(form = ~ 1 | plot),data = resp) #
+summary(soil.rm10) # Obtain F-test
+anova(soil.rm10)
+
+# Compare the AICs
+AIC(soil.rm1, soil.rm2, soil.rm3,soil.rm4, soil.rm5, soil.rm6,soil.rm7,soil.rm8,soil.rm9,soil.rm10)
+
+# The unstructured covariance matrix has the lowest AIC score ??
 ```
+
 
 
