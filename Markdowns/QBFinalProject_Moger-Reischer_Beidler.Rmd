@@ -266,7 +266,7 @@ xlab("Year") +
 ylab("Mean Rank Shift") + scale_color_grey()
 plot(rankshift.plot)
 plant.rankshift %>% 
-  group_by (plot_type) %>% 
+  group_by (treatment) %>% 
   summarise(mean = mean(MRS), cv = sd(MRS)/mean)
 
 # Rank Clock
@@ -301,7 +301,7 @@ resp_yr.plot = qplot(doy, co2flux, data = resp, geom="smooth") +
          stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
-        facet_wrap(~year, ncol = 1)
+        facet_wrap(~year, ncol = 1) +
         xlab("Day of the Year") +
         ylab("CO2 Flux") 
 resp_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil Respiration 2006-2009")
@@ -326,17 +326,17 @@ n03_yr.plot = qplot(doy, netno3, data = nmin, geom="smooth") +
          stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
-        facet_wrap(hor~year)
+        facet_wrap(hor~year) +
         xlab("Day of the Year") +
         ylab("Net Nitrate") 
-nmin_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
+n03_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
 plot(n03_yr.plot)
 
 nh4_yr.plot = qplot(doy, netnh4, data = nmin, geom="smooth") +
          stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
-        facet_wrap(hor~year)
+        facet_wrap(hor~year) +
         xlab("Day of the Year") +
         ylab("Net Ammonium") 
 nh4_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
