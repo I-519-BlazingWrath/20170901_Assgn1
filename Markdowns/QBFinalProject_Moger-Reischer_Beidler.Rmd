@@ -18,9 +18,6 @@ geometry: margin=2.54cm
     Two of the most well-documented outcomes of anthropogenic global change are nitrogen deposition and climatic warming. These changes can alter C and N cycling in forests, and may favor certain species in plant and microbial communities, decreasing biodiversity and leading to species turnover. For example, there is evidence that N addition can reduce CO2 flux across numerous contexts (Bowden et al. 2004; Ramirez et al. 2012). It is known that N deposition can be related to changes in soil fungi community composition, but effects on bacterial communities are less evident (Hesse et al. 2015). Effects on tree communities associated with these microbes may be less facile to observe, given their slower rates of growth and turnover. Similarly, soil warming has been shown to increase soil respiration, while effects on microbial community composition are more ambiguous (Schindlbacher et al. 2011). There is ample research indicating physiological and phonological shifts in individual tree species under a warmed scenario (Xu et al. 2012; Zhao & Liu 2009). There is also evidence that particular species in a community can respond more or less favorably to such change, indicating that long-term warming could alter forest biodiversity (Arend et al. 2011; Thakur et al. 2014).
     In this analysis we evaluate primarily plant community and soil abiotic properties in a temperate forest. Abundances of 40 plant species were censused each year 2006 - 2009. Soil abiotic variables were measured ~monthly during this time. We used R to explore the effects of nitrogen and warming treatments on plant biodiversity and soil carbon and nitrogen dynamics over time.
 
-
-
-
 **Research Question**: What are the short-term effects of soil warming plus N additions on plant richness and diversity at Harvard Forest from 2006-2009?
 
 > ***Hypothesis 1***: Richness and diversity will decrease over time in warming treatments
@@ -43,7 +40,7 @@ setwd("/Users/bhbeidler/GitHub/QB2017_DivPro/Data")
 ## 3)  DESCRIPTION OF DATA
 
     The overall objective of this project is to investigate whether soil warming and N fertilization alter plant biodiversity through time (2006-2009).
-    In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the interactive effects of these two environmental changes on plant, arthropod, and soil microbe community composition, and soil respiration (Frey 2009). Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 °C above ambient temperature.
+    In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the interactive effects of these two environmental changes on plant, arthropod, and soil microbe community composition, and soil respiration (Frey 2009). Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 ?C above ambient temperature.
     The data for this project came from the Harvard Forest LTER site. [link](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-hfr.45.24)
 
 ### B.Install Packages
@@ -268,7 +265,7 @@ xlim(2007, 2009) +
 xlab("Year") +
 ylab("Mean Rank Shift") + scale_color_grey()
 plot(rankshift.plot)
-portal.rankshift %>% 
+plant.rankshift %>% 
   group_by (plot_type) %>% 
   summarise(mean = mean(MRS), cv = sd(MRS)/mean)
 
@@ -430,7 +427,7 @@ HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HE
 
 ## 7)  REFERENCES
 
-Arend, M., Kuster, T., Günthardt-Goerg, M.S. and Dobbertin, M., 2011. Provenance-specific growth responses to drought and air warming in three European oak species (Quercus robur, Q. petraea and Q. pubescens). Tree Physiology, 31(3), pp.287-297.
+Arend, M., Kuster, T., G?nthardt-Goerg, M.S. and Dobbertin, M., 2011. Provenance-specific growth responses to drought and air warming in three European oak species (Quercus robur, Q. petraea and Q. pubescens). Tree Physiology, 31(3), pp.287-297.
 
 Bowden, R.D., Davidson, E., Savage, K., Arabia, C. and Steudler, P., 2004. Chronic nitrogen additions reduce total soil respiration and microbial respiration in temperate forest soils at the Harvard Forest. Forest Ecology and Management, 196(1), pp.43-56.
 
