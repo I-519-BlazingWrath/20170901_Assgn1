@@ -1,7 +1,7 @@
 ---
 title: Effects of Soil Warming Plus Nitrogen Addition on Plant Richness and Diversity
   at Harvard Forest
-author: "Roy Moger-Reischer and Katie Beidler"
+author: "Roy Moger-Reischer and Katie Beidle, Quantitative Biodiversity, Indiana University"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: pdf_document
 geometry: margin=2.54cm
@@ -9,7 +9,17 @@ geometry: margin=2.54cm
 
 ## PROJECT OVERVIEW
 
-The overall objective of this project is to investigate whether soil warming and N fertilization alter plant biodiversity through time (2006-2009). The data for this project came from the Harvard Forest LTER site. [link](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-hfr.45.24)
+## ABSTRACT
+
+    Contemporary anthropogenic changes to ecosystem parameters can alter N and C cycling and reduce biodiversity. We examined the effects of warming and N deposition on community composition and soil respiration in a temperate forest. WE FOUND THAT WARMING SIGNIFICANTLY REDUCED CO2 FLUX. TREE SPECIES TURNOVER DID NOT CHANGE SUBSTANTIALLY THROUGH TIME. SPECIES RICHNESS AND DIVERSITY WERE NOT SIGNIFICANTLY DIFFERENT AMONG TREATMENTS. THERE WAS NO INDICATION OF AN INTERACTION EFFECT BETWEEN N AND WARMING MANIPULATIONS. Our analysis indicates ecosystem disturbances do alter element cycling. We suggest that a longer-duration study is needed in order to observe significant effects on tree community dynamics, give their lengthy life histories.
+    
+## 1)  INTRODUCTION
+
+    Two of the most well-documented outcomes of anthropogenic global change are nitrogen deposition and climatic warming. These changes can alter C and N cycling in forests, and may favor certain species in plant and microbial communities, decreasing biodiversity and leading to species turnover. For example, there is evidence that N addition can reduce CO2 flux across numerous contexts (Bowden et al. 2004; Ramirez et al. 2012). It is known that N deposition can be related to changes in soil fungi community composition, but effects on bacterial communities are less evident (Hesse et al. 2015). Effects on tree communities associated with these microbes may be less facile to observe, given their slower rates of growth and turnover. Similarly, soil warming has been shown to increase soil respiration, while effects on microbial community composition are more ambiguous (Schindlbacher et al. 2011). There is ample research indicating physiological and phonological shifts in individual tree species under a warmed scenario (Xu et al. 2012; Zhao & Liu 2009). There is also evidence that particular species in a community can respond more or less favorably to such change, indicating that long-term warming could alter forest biodiversity (Arend et al. 2011; Thakur et al. 2014).
+    In this analysis we evaluate primarily plant community and soil abiotic properties in a temperate forest. Abundances of 40 plant species were censused each year 2006 - 2009. Soil abiotic variables were measured ~monthly during this time. We used R to explore the effects of nitrogen and warming treatments on plant biodiversity and soil carbon and nitrogen dynamics over time.
+
+
+
 
 **Research Question**: What are the short-term effects of soil warming plus N additions on plant richness and diversity at Harvard Forest from 2006-2009?
 
@@ -17,13 +27,8 @@ The overall objective of this project is to investigate whether soil warming and
 
 > ***Hypothesis 2***: Richness and diversity will increase over time with the addition of nitrogen
 
-## BACKGROUND
-Two of the most well-documented outcomes of anthropogenic global change are nitrogen deposition and climatic warming. In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the in-teractive effects of these two environmental changes on plant, arthro-pod, and soil microbe community composition, and soil respiration. Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 ?C above ambient temperature.
-    
-In this analysis we evaluated primarily plant community and soil abiotic properties. Abundances of 40 plant species were censused each year 2006 - 2009. Soil abiotic variables were measured ~monthly during this time. We used R to explore the effects of treatment and time plant biodiversity and soil carbon and nitrogen dynamics.
-
-## 1) SETUP
-### A. Retrieve and Set your Working Directory
+## 2) SETUP
+### Retrieve and Set Working Directory
 ```{r setup, include=FALSE}
 clr = function() {
   ENV = globalenv()
@@ -33,13 +38,18 @@ clr = function() {
 }
 getwd() 
 setwd("/Users/bhbeidler/GitHub/QB2017_DivPro/Data")
+#setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data")
 ```
+## 3)  DESCRIPTION OF DATA
+
+    The overall objective of this project is to investigate whether soil warming and N fertilization alter plant biodiversity through time (2006-2009).
+    In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the interactive effects of these two environmental changes on plant, arthropod, and soil microbe community composition, and soil respiration (Frey 2009). Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 °C above ambient temperature.
+    The data for this project came from the Harvard Forest LTER site. [link](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-hfr.45.24)
+
 ### B.Install Packages
 This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
 ```{r results='hide', message=FALSE, warning=FALSE} 
-package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape',
-'cowplot', 'MullerPlot', 'RColorBrewer','lubridate', 'reshape2', 'lubridate','wesanderson',
-'TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
+package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape','cowplot', 'MullerPlot', 'RColorBrewer','lubridate', 'reshape2', 'lubridate','wesanderson','TTR', 'xtable', 'multcomp', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
 
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
@@ -60,6 +70,12 @@ setwd("/Users/bhbeidler/GitHub/QB2017_DivPro/Data")
 plant = read.csv("./HF_plants_treat.csv")
 nmin = read.csv("./HF_nmin.csv", stringsAsFactors = FALSE)
 resp = read.csv("./HF_soilresp.csv", stringsAsFactors = FALSE)
+
+
+#plant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_plants_treat.csv")
+#nmin = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_nmin.csv", stringsAsFactors = FALSE)
+#resp = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soilresp.csv", stringsAsFactors = FALSE)
+
 ```
 ### B. Data Wrangling
 Subsetting the data by year and producing site by species matrices. 
@@ -79,7 +95,7 @@ plant_07_sbys = plant_07[ ,6:43]
 plant_08_sbys = plant_08[ ,6:43]
 plant_09_sbys = plant_09[ ,6:43]
 ```
-## 3)  BIODIVERSITY DATA VISUALIZATION & PLOTS
+###  BIODIVERSITY DATA VISUALIZATION & PLOTS
 [plots that show richness for each site/ abundance for a particular species]
 Visualizing Beta Diversity
 ```{r}
@@ -131,7 +147,7 @@ p_div.plot = ggplot(p_div.treat.plot, aes(x = year, y = mean, color = as.factor(
                theme(axis.line.x = element_line(color = "black"),axis.line.y = element_line(color = "black"))
 plot(p_div.plot)
 ```
-## 4) BIODIVERSITY HYPOTHESIS TESTING
+### BIODIVERSITY HYPOTHESIS TESTING
 ```{r}
 p_rich.rm = lme(richness ~ year + heat_treat + N_treat * heat_treat * N_treat * year, random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = p_rich.all) 
 summary(p_rich.rm) # Obtain F-test
@@ -147,7 +163,7 @@ anova(p_div.rm)
 set.caption("RMANOVA for Plant Diversity Data") 
 pander(anova(p_div.rm))
 ```
-## 4) TEMPORAL BIODIVERSITY
+### TEMPORAL BIODIVERSITY
 ### A. Turnover
 ```{r}
 # Making the wide site by species format into a long format- to get abundances for each species 
@@ -273,7 +289,7 @@ rclock_plot = ggplot(ag_plant.dat, aes(year, n, color = species)) +
 plot(rclock_plot)
 ```
 
-## 4) SOIL MEASURMENTS 
+### SOIL MEASURMENTS 
 ### A. Plots
 ```{r}
 # Soil respiration
@@ -408,5 +424,27 @@ AIC(soil.rm1, soil.rm2, soil.rm3,soil.rm4, soil.rm5, soil.rm6,soil.rm7,soil.rm8,
 # The unstructured covariance matrix has the lowest AIC score ??
 ```
 
+## 6)  DISCUSSION AND CONCLUSION
+
+HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL HELP A TROLL 
+
+## 7)  REFERENCES
+
+Arend, M., Kuster, T., Günthardt-Goerg, M.S. and Dobbertin, M., 2011. Provenance-specific growth responses to drought and air warming in three European oak species (Quercus robur, Q. petraea and Q. pubescens). Tree Physiology, 31(3), pp.287-297.
+
+Bowden, R.D., Davidson, E., Savage, K., Arabia, C. and Steudler, P., 2004. Chronic nitrogen additions reduce total soil respiration and microbial respiration in temperate forest soils at the Harvard Forest. Forest Ecology and Management, 196(1), pp.43-56.
+
+Frey, Serita (2009): Soil warming plus nitrogen addition expermient at Harvard Forest since 2006. Long Term Ecological Research Network. [link]http://dx.doi.org/10.6073/pasta/08505f370bbcf98b7237434e41c78bc8
 
 
+Hesse, C.N., Mueller, R.C., Vuyisich, M., Gallegos-Graves, L.V., Gleasner, C.D., Zak, D.R. and Kuske, C.R., 2015. Forest floor community metatranscriptomes identify fungal and bacterial responses to N deposition in two maple forests. Frontiers in microbiology, 6, p.337.
+
+Ramirez, K.S., Craine, J.M. and Fierer, N., 2012. Consistent effects of nitrogen amendments on soil microbial communities and processes across biomes. Global Change Biology, 18(6), pp.1918-1927
+
+Schindlbacher, A., Rodler, A., Kuffner, M., Kitzler, B., Sessitsch, A. and Zechmeister-Boltenstern, S., 2011. Experimental warming effects on the microbial community of a temperate mountain forest soil. Soil Biology and Biochemistry, 43(7), pp.1417-1425.
+
+Thakur, M.P., Reich, P.B., Eddy, W.C., Stefanski, A., Rich, R., Hobbie, S.E. and Eisenhauer, N., 2014. Some plants like it warmer: Increased growth of three selected invasive plant species in soils with a history of experimental warming. Pedobiologia, 57(1), pp.57-60.
+
+Xu, Z., Hu, T. and Zhang, Y., 2012. Effects of experimental warming on phenology, growth and gas exchange of treeline birch (Betula utilis) saplings, Eastern Tibetan Plateau, China. European Journal of Forest Research, 131(3), pp.811-819.
+
+Zhao, C. and Liu, Q., 2009. Growth and physiological responses of Picea asperata seedlings to elevated temperature and to nitrogen fertilization. Acta physiologiae plantarum, 31(1), p.163.
