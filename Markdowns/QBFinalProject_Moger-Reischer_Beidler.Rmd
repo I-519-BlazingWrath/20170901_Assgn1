@@ -33,17 +33,17 @@ clr = function() {
   rm(list = ll, envir = ENV)
 }
 getwd() 
-setwd("/Users/kbeidler/GitHub/QB2017_DivPro/Data")
+setwd("/Users/bheidler/GitHub/QB2017_DivPro/Data")
 #setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data")
 ```
 ## 3)  DESCRIPTION OF DATA
 
-The overall objective of this project is to investigate whether soil warming and N fertilization alter plant biodiversity through time (2006-2009). In 2006 a group at the Harvard Forest LTER initiated an experiment to assess the interactive effects of these two environmental changes on plant, arthropod, and soil microbe community composition, and soil respiration (Frey 2009). Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 degrees C above ambient temperature. The data for this project came from the Harvard Forest LTER site. [link](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-hfr.45.24)
+The overall objective of this project is to investigate whether soil warming and N fertilization alter plant biodiversity through time (2006-2009). In 2006 a group at the Harvard Forest LTER led by Serita Frey, initiated an experiment to assess the interactive effects of these two environmental changes on plant, arthropod, and soil microbe community composition, and soil respiration (Frey 2009). Six replicate plots for each of four treatments (Control; N deposition; heated; N & heated interaction) were established. N deposition plots received 50 kg N/ha/yr. Heated plots were warmed to 5 degrees C above ambient temperature. The data for this project came from the Harvard Forest LTER site. [link](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-hfr.45.24)
 
 ### B.Install Packages
 This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
 ```{r results='hide', message=FALSE, warning=FALSE} 
-package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape','cowplot', 'MullerPlot','scales','grid', 'RColorBrewer','lubridate', 'reshape2', 'lubridate','wesanderson','TTR', 'xtable', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
+package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape','cowplot', 'MullerPlot','scales','grid','RColorBrewer','lubridate', 'reshape2', 'lubridate','wesanderson','TTR', 'xtable', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
 
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
@@ -54,13 +54,12 @@ library(package, character.only = TRUE) }
 ## 2) LOADING DATA
 
 ### A. Description of Data Set
-[Explain what is contained in the different data sheets...]
-1. 'plant'
+1. 'plant': This datasheet 
 2. 'nmin'
 3. 'resp'
 
 ```{r}
-setwd("/Users/kbeidler/GitHub/QB2017_DivPro/Data")
+setwd("/Users/bhbeidler/GitHub/QB2017_DivPro/Data")
 plant = read.csv("./HF_plants_treat.csv")
 nmin = read.csv("./HF_nmin.csv", stringsAsFactors = FALSE)
 resp = read.csv("./HF_soilresp.csv", stringsAsFactors = FALSE)
@@ -69,7 +68,6 @@ resp = read.csv("./HF_soilresp.csv", stringsAsFactors = FALSE)
 #plant = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_plants_treat.csv")
 #nmin = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_nmin.csv", stringsAsFactors = FALSE)
 #resp = read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soilresp.csv", stringsAsFactors = FALSE)
-
 ```
 ### B. Data Wrangling
 Subsetting the data by year and producing site by species matrices. 
@@ -90,8 +88,6 @@ plant_08_sbys = plant_08[ ,6:43]
 plant_09_sbys = plant_09[ ,6:43]
 ```
 ###  BIODIVERSITY DATA VISUALIZATION & PLOTS
-[plots that show richness for each site/ abundance for a particular species]
-Visualizing Beta Diversity
 ```{r}
 # Visualizing the Plant data set
 str(plant, max.level = 1)
@@ -110,11 +106,14 @@ names(p_rich.all)[6] = "richness"
 p_rich.treat.plot = group_by(p_rich.all, treatment, year) %>%
   summarise(mean = mean(richness), sd = sd(richness),n = n(),sem = sd/sqrt(n))
 
+library("colourlovers")
+palette1 = clpalette('113451')
+
 p_rich.plot = ggplot(p_rich.treat.plot, aes(x = year, y = mean, color = as.factor(treatment))) + 
                geom_point(size = 2, show.legend = T) +
                geom_line(size = 0.75) +
-               geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
-               scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) +
+  geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
+               scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#8B7765"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) +
                xlim(2006, 2009) + xlab("Year") + ylab("Richness") +
                theme_classic(base_size=15)+
                theme(axis.line.x = element_line(color = "black"), axis.line.y = element_line(color ="black"))
@@ -135,7 +134,7 @@ p_div.plot = ggplot(p_div.treat.plot, aes(x = year, y = mean, color = as.factor(
                geom_point(size = 2, show.legend = T) +
                geom_line(size = 0.75) +
                geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = .1) +
-               scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) +
+               scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#8B7765"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized"))  +
                xlim(2006, 2009) + xlab("Year") + ylab("Shannon's Diversity Index")+
                theme_classic(base_size=15)+
                theme(axis.line.x = element_line(color = "black"),axis.line.y = element_line(color = "black"))
@@ -199,50 +198,44 @@ plant.turnover = full_join(plant.total, plant.disappearance) %>%
 
 plant.turnover = gather(plant.turnover, key = metric, value = turnover, total, appearance, disappearance)
 View(plant.turnover)
+
 # 3. Visualize turnover within each group
 
-plant.turn.plot = ggplot(plant.turnover, aes(x = year, y = turnover, color = metric)) +
-  geom_line(size = 1, show.legend = T) + facet_wrap(~treatment, ncol = 1) +
+plant.turn.plot = ggplot(plant.turnover, aes(x = year, y = turnover, color = treatment)) +
+  geom_line(size = 1, show.legend = T) + facet_wrap(~metric, ncol = 1) +
   xlim(2007, 2009) +
   xlab("Year") +
   ylab("Turnover") +
-  theme(legend.position = "bottom") +
-  scale_color_grey()
+  scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#8B7765"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized"))+
+  theme_bw(base_size=20)
 plot(plant.turn.plot)
+
 # Low turnover is indicative of a stable community and high turnover is indicative of a dynamic community
 
-# Abundance Plots
-p_abun.plot = ggplot(plant.sp.abunds, aes(year, n, color= as.factor(treatment))) + 
+# Abundance Plot treatment by year
+p_abun.plot1 = ggplot(plant.sp.abunds, aes(year, n, color= as.factor(treatment))) + 
               geom_point() +
               geom_line(aes(color = as.factor(treatment))) +
               facet_wrap(~species, nrow = 8) +
-              scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized")) + 
+              scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#8B7765"),name="Soil Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized"))  +
               ylab("# of  Stems") + 
-              theme_bw() +
+              theme_bw(base_size=15) +
               theme(axis.text.x = element_text(angle=70, vjust=0.5))
+plot(p_abun.plot1)
 
-# Abundances at time point 1
-p_abun.06 = dplyr::filter(plant.sp.abunds, year == "2006")
-p_abun.plot.06 = ggplot(p_abun.06 , aes(x = species, y = n)) + 
+# Abundances across years
+p_abun.plot2 = ggplot(plant.sp.abunds , aes(x = species, y = n)) + 
                   geom_bar(stat = "identity") + 
-                  facet_wrap(~treatment, ncol = 1) +
+                  facet_wrap(~year, ncol = 1) +
                   ylab("# of  Stems") +
-                  theme_bw() +
+                  theme_bw(base_size=25) +
                   theme(axis.text.x = element_text(angle=70, vjust=0.5)) 
-
-# Abundances at time point 2
-p_abun.09 = dplyr::filter(plant.sp.abunds, year == "2009")
-p_abun.plot.09 = ggplot(p_abun.09 , aes(x = species, y = n)) + 
-                  geom_bar(stat = "identity") + 
-                  facet_wrap(~treatment, ncol = 1) +
-                  ylab("# of  Stems") +
-                  theme_bw() +
-                  theme(axis.text.x = element_text(angle=70, vjust=0.5)) 
+plot(p_abun.plot2)
 
 ```
 ### B. Rank Shift
 ```{r}
-# Calculate species abundances for each taxonomic group 
+# Calculate species abundances for each treatment group 
 plant.sp.abunds = p_long %>% 
                      group_by(year,treatment) %>% 
                      count(species)
@@ -271,15 +264,15 @@ ag_plant.dat = aggregate(n ~ species * year * treatment,
                     data = subset(plant.sp.abunds, 
                                     species == "denpun" |
                                     species == "maican" | 
-                                    species == "vaccspp"| 
+                                    species == "mitrep"| 
                                     species == "gaupro"), FUN = mean)
 
 rclock_plot = ggplot(ag_plant.dat, aes(year, n, color = species)) + 
-        geom_line(size = 1) + coord_polar() + theme_bw() +
+        geom_line(size = 1) + coord_polar() + theme_bw(base_size = 25) +
         facet_wrap(~treatment) +
         ylab("# of Stems") +
-        scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#56B4E9")) +
-        ggtitle("Dominant species abundances \n for the different soil treatments, Harvard Forest \n")
+        scale_color_manual(values = c("#2F4F4F", "#FF4040", "#8FBC8F", "#C0C0C0")) +
+        ggtitle("Dominant species abundances \n for the different soil treatments, Harvard Forest \n") 
 plot(rclock_plot)
 # Species Codes: Denpun = Dennstaedtia punctilobula, Gauopro = Gaultheria procumbens, maican = Maianthemum canadense, vaccpp = number of stems of Vaccinium species (corymbosum, angustifolium, vacillans)
 ```
@@ -292,7 +285,6 @@ resp = resp %>%
     filter(year %in% c( "2006","2007", "2008", "2009"))
 resp$date = as.Date(resp$date, format = "%m/%d/%Y")
 resp$doy = yday(resp$date)
-
 resp = na.exclude(resp) 
 
 resp_yr.plot = qplot(doy, co2flux, data = resp, geom="smooth") +
@@ -305,12 +297,14 @@ resp_yr.plot = qplot(doy, co2flux, data = resp, geom="smooth") +
 resp_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil Respiration 2006-2009")
 plot(resp_yr.plot)
 
-resp_trt.plot = qplot(doy, co2flux, data = resp, colour = as.factor(trt), geom="smooth", se=FALSE) +
-      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
-      facet_wrap(~year, ncol = 1) +
+resp_trt.plot = qplot(doy, co2flux, data = resp, colour = as.factor(trt), geom="smooth") +
+      stat_smooth(method ="auto",se = TRUE, formula = y ~ x, size = 0.5, alpha =0.2) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black")) 
-resp_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("CO2 Flux)") + theme(text = element_text(size=18))
+            panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+            scale_color_manual(values = c("#999999", "#E69F00", "#000000", "#8B7765"),name="Soil  Treatment",labels=c("Unheated-Unfertilized", "Heated-Unfertilized", "Heated- Fertilized", "Unheated-Fertilized"))  +
+              xlab("Day of the Year") + 
+              ylab("Soil CO2 Eflux(mg C m-2 h-1)") + 
+              theme(text = element_text(size=20))
 plot(resp_trt.plot)
 
 # N mineralization
@@ -318,50 +312,31 @@ nmin = nmin %>%
     filter(year %in% c("2006","2007", "2008", "2009"))
 nmin$date = as.Date(nmin$date, format = "%m/%d/%Y")
 nmin$doy = yday(nmin$date)
-nmin = na.remove(nmin)
+nmin = na.exclude(nmin) 
 
-n03_yr.plot = qplot(doy, netno3, data = nmin, geom="smooth") +
+n03_yr.plot = qplot(doy, netno3, data = nmin,colour = as.factor(year), geom="smooth") +
          stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
          theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
-        facet_wrap(hor~year) +
         xlab("Day of the Year") +
         ylab("Net Nitrate") 
 n03_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
 plot(n03_yr.plot)
 
-nh4_yr.plot = qplot(doy, netnh4, data = nmin, geom="smooth") +
-         stat_smooth(fill="azure3", colour="mediumpurple4", size=1, alpha = 0.2) + 
-         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line =   element_line(colour = "black")) + 
-        facet_wrap(hor~year) +
-        xlab("Day of the Year") +
-        ylab("Net Ammonium") 
-nh4_yr.plot + theme(text = element_text(size=18), plot.title = element_text(lineheight=.8, face="bold")) + ggtitle("Soil NO3 2006-2009")
-plot(nh4_yr.plot)
 
 no3_trt.plot = qplot(doy, netnh4, data = nmin, colour = as.factor(trt), geom="smooth", se=FALSE) +
-      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
+      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 0.75) +
       facet_wrap(hor~year) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 resp_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("Total NO3)") + theme(text = element_text(size=18))
 plot(no3_trt.plot)
 
-nh4_trt.plot = qplot(doy, netnh4, data = nmin, colour = as.factor(trt), geom="smooth", se=FALSE) +
-      stat_smooth(method ="auto",se = FALSE, formula = y ~ x, size = 1) +
-      facet_wrap(hor~year) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black")) 
-nh4_trt.plot + scale_colour_brewer(type="seq", palette=3) + xlab("Day of the Year") +ylab("Total NH4)") + theme(text = element_text(size=18))
-plot(nh4_trt.plot)
-
-
-
 ```
 ### B. Hypothesis Testing
 ```{r} 
-plant.treat.plot = group_by(resp, trt, year) %>%
+# Soil Respiration
+resp.treat.mean = group_by(resp, trt) %>%
   summarise(mean = mean(co2flux), sd = sd(co2flux),n = n(),sem = sd/sqrt(n)) 
 
 # Trying different variance - covariance structures 
@@ -417,8 +392,65 @@ anova(soil.rm10)
 
 # Compare the AICs
 AIC(soil.rm1, soil.rm2, soil.rm3,soil.rm4, soil.rm5, soil.rm6,soil.rm7,soil.rm8,soil.rm9,soil.rm10)
+# The unstructured covariance matrix has the lowest AIC score
 
-# The unstructured covariance matrix has the lowest AIC score ??
+# N Minearlization
+nmin.treat.plot = group_by(nmin, trt, year) %>%
+  summarise(mean = mean(netno3), sd = sd(netno3),n = n(),sem = sd/sqrt(n)) 
+
+# Trying different variance - covariance structures 
+# AR(1) covariance structure
+nmin.rm1 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm1) 
+anova(nmin.rm1)
+
+# corARMA autoregressive moving average proccess 
+nmin.rm2 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corCompSymm(form = ~ 1 | plot),data = nmin) #
+summary(nmin.rm2) 
+anova(nmin.rm2)
+
+# cirCAR1 cnt AR process
+nmin.rm3 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corCAR1(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm3) 
+anova(nmin.rm3)
+
+# corARMA autoregressive moving average process, with arbitrary components
+nmin.rm4 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corARMA(form = ~ 1 | plot, p = 1, q = 1),data = nmin) 
+summary(nmin.rm4) 
+anova(nmin.rm4)
+
+#corExp exponential spatial correlation.
+nmin.rm5 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corExp(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm5) 
+anova(nmin.rm5)
+
+# CorGaus Gaussian spatial correlation.
+nmin.rm6 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corGaus(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm6) 
+anova(nmin.rm6)
+
+# corLin	linear spatial correlation.
+nmin.rm7 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corLin(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm7) 
+anova(nmin.rm7)
+
+# corRatio	Rational quadratics spatial correlation.
+nmin.rm8 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corRatio(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm8) 
+anova(nmin.rm8)
+
+# corRatioSpher	spherical spatial correlation
+nmin.rm9 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corSpher(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm9) 
+anova(nmin.rm9)
+
+# corSymm general correlation matrix, with no additional structure
+nmin.rm10 = lme(netno3 ~ year + heat_treat + N_treat * heat_treat * N_treat * year , random = ~ 1 | plot, correlation = corSpher(form = ~ 1 | plot),data = nmin) 
+summary(nmin.rm10) 
+anova(nmin.rm10)
+
+# Compare the AICs
+AIC(nmin.rm1, nmin.rm2, nmin.rm3,nmin.rm4, nmin.rm5, nmin.rm6,nmin.rm7,nmin.rm8,nmin.rm9,nmin.rm10)
 ```
 
 ## 6)  DISCUSSION AND CONCLUSION
