@@ -3,7 +3,7 @@ title: Effects of Soil Warming Plus Nitrogen Addition on Plant Richness and Dive
   at Harvard Forest
 author: "Roy Moger-Reischer and Katie Beidler, Quantitative Biodiversity, Indiana University"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 geometry: margin=2.54cm
 ---
 
@@ -33,8 +33,7 @@ clr = function() {
   rm(list = ll, envir = ENV)
 }
 getwd() 
-setwd("/Users/bhbeidler/GitHub/QB2017_DivPro/Data")
-#setwd("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data")
+#setwd("/Users/bhbeidler/GitHub/QB2017_DivPro/Data")
 ```
 ## 3) DESCRIPTION OF DATA
 
@@ -43,7 +42,7 @@ The overall objective of this project is to investigate whether soil warming and
 ### B.Install Packages
 This analysis will require several packages. The require() function in R returns TRUE if the package was successfully loaded or FALSE if the package failed to load. This for loop loads each package and installs the package when require() returns FALSE.
 ```{r results='hide', message=FALSE, warning=FALSE} 
-package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape','cowplot', 'MullerPlot','scales','grid','RColorBrewer','lubridate', 'reshape2', 'lubridate','multcomp','TTR', 'xtable', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools')
+package.list = c('vegan', 'tidyr', 'dplyr', 'codyn', 'ggplot2','betapart','splitstackshape','cowplot', 'MullerPlot','scales','grid','RColorBrewer','lubridate', 'reshape2', 'lubridate','multcomp','TTR', 'xtable', 'pander', 'png', 'grid', 'tseries', 'nlme', 'forecast', 'lsmeans', 'devtools', 'lme4')
 
 for (package in package.list) {
 if (!require(package, character.only = TRUE, quietly = TRUE)) {
@@ -58,9 +57,11 @@ library(package, character.only = TRUE) }
 2. 'resp':This datasheet includes field season measurements of soil respiration (CO2 flux (mg C m-2 h-1)))
 
 ```{r}
-setwd("/Users/rmoge/GitHub/QB2017_DivPro/Data")
-plant = read.csv("./HF_plants_treat.csv")
-resp = read.csv("./HF_soilresp.csv", stringsAsFactors = FALSE)
+#plant = read.csv("./HF_plants_treat.csv")
+#resp = read.csv("./HF_soilresp.csv", stringsAsFactors = FALSE)
+
+plant=read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_plants_treat.csv")
+resp<-read.csv("C:\\Users\\rmoge\\GitHub\\QB2017_DivPro\\Data\\HF_soilresp.csv")
 ```
 ### B. Data Wrangling
 Subsetting the data by year and producing site by species matrices. 
@@ -140,11 +141,12 @@ set.caption("RMANOVA for Plant Richness Data")
 pander(anova(p_rich.rm))
 
 # Perform an RM-ANOVA and construct a F-test using the AR(1)
-p_div.rm = lme(diversity ~ as.factor(year) + heat_treat + N_treat * heat_treat * N_treat * year, random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = p_div.all) # Look at detailed output
+p_div.rm = lme(diversity ~year + heat_treat + N_treat * heat_treat * N_treat * year, random = ~ 1 | plot, correlation = corAR1(form = ~ 1 | plot),data = p_div.all) # Look at detailed output
 summary(p_div.rm)
 anova(p_div.rm)
 set.caption("RMANOVA for Plant Diversity Data") 
 pander(anova(p_div.rm))
+
 ```
 ### TEMPORAL BIODIVERSITY
 ### A. Turnover
@@ -366,20 +368,19 @@ AIC(soil.rm1, soil.rm2, soil.rm3,soil.rm4, soil.rm5, soil.rm6,soil.rm7,soil.rm8,
 
 ## 7)  REFERENCES
 
-Arend, M., Kuster, T., G?nthardt-Goerg, M.S. and Dobbertin, M., 2011. Provenance-specific growth responses to drought and air warming in three European oak species (Quercus robur, Q. petraea and Q. pubescens). Tree Physiology, 31(3), pp.287-297.
+Arend, M., Kuster, T., Guenthardt-Goerg, M.S. and Dobbertin, M., 2011. Provenance-specific growth responses to drought and air warming in three European oak species (Quercus robur, Q. petraea and Q. pubescens). Tree Physiology, 31(3), pp.287-297.
 
 Bowden, R.D., Davidson, E., Savage, K., Arabia, C. and Steudler, P., 2004. Chronic nitrogen additions reduce total soil respiration and microbial respiration in temperate forest soils at the Harvard Forest. Forest Ecology and Management, 196(1), pp.43-56.
 
-Clark C.M., Tilman D., 2008. Loss of plant species after chronic low-level 
-nitrogen deposition to prairie grasslands. Nature, 451, pp.712–715. 
+Clark C.M., Tilman D., 2008. Loss of plant species after chronic low-level nitrogen deposition to prairie grasslands. Nature, 451, pp.712-715. 
 
-Classen, A. T., M. K. Sundqvist, J. A. Henning, G. S. Newman, J. A. M. Moore, M. A. Cregger, L. C. Moorhead, and C. M. Patterson. 2015. Direct and indirect effects of climate change on soil microbial and soil microbial-plant interactions: What lies ahead?, Ecosphere 6(8), pp 130. 
+Classen, A. T., M. K. Sundqvist, J. A. Henning, G. S. Newman, J. A. M. Moore, M. A. Cregger, L. C. Moorhead, and C. M. Patterson. 2015. Direct and indirect effects of climate change on soil microbial and soil microbial-plant interactions: What lies ahead?, Ecosphere 6(8), 130. 
 
 Compant, S., Van der Heijden, M.and Sessitsch, A., 2013. Soil Warming Effects on Beneficial Plant-Microbe Interactions. Molecular Microbial Ecology of the Rhizosphere, 1, pp.1047-1054
 
-Davidson, E.A., and Janssens, I. A., 2006. Temperature Sensitivity of Soil Carbon Decomposition and Feedbacks to Climate Change. Nature, 440, pp.165-73. 
+Davidson, E.A., and Janssens, I. A., 2006. Temperature Sensitivity of Soil Carbon Decomposition and Feedbacks to Climate Change. Nature 440: 165-173. 
 
-DeAngelis, K.M., Pold, G., Begüm, D., van Diepen, L.T., Varney, R.M., Blanchard, J.L., Melillo, J. and Frey, S.D., 2015. Long-term forest soil warming alters microbial communities in temperate forest soils. Frontiers in Microbiology, 6 (140).
+DeAngelis, K.M., Pold, G., Beguem, D., van Diepen, L.T., Varney, R.M., Blanchard, J.L., Melillo, J. and Frey, S.D., 2015. Long-term forest soil warming alters microbial communities in temperate forest soils. Frontiers in Microbiology, 6 (140).
 
 Frey, S.D., Knorr, M., Parrent, J.L. and Simpson, R.T., 2004. Chronic nitrogen enrichment affects the structure and function of the soil microbial community in temperate hardwood and pine forests. Forest Ecology and Management, 196(1), pp.159-171.
 
@@ -396,7 +397,7 @@ Melillo, J. M., Steudler, P. A., Aber, J. D., Newkirk, K., Lux, H.,  and Bowles,
 Ramirez, K.S., Craine, J.M. and Fierer, N., 2012. Consistent effects of nitrogen amendments on soil microbial communities and processes across biomes. Global Change Biology, 18(6), pp.1918-1927
 
 Strengbom J.A., Nordin A.,  and Nasholm T. and Ericson L , 2001. Slow recovery of a 
-boreal forest ecosystem following decreased nitrogen input. Functional Ecology, 15, pp.454–457. 
+boreal forest ecosystem following decreased nitrogen input. Functional Ecology, 15, pp.454-457. 
 
 Schindlbacher, A., Rodler, A., Kuffner, M., Kitzler, B., Sessitsch, A. and Zechmeister-Boltenstern, S., 2011. Experimental warming effects on the microbial community of a temperate mountain forest soil. Soil Biology and Biochemistry, 43(7), pp.1417-1425.
 
